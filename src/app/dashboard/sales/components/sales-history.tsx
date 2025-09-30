@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -25,9 +27,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useEffect, useState } from 'react';
 
 export function SalesHistory() {
   const sales = transactions.filter((t) => t.type === 'Venda');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <Card>
@@ -56,9 +64,9 @@ export function SalesHistory() {
                     {sale.id}
                   </TableCell>
                   <TableCell>
-                    {format(new Date(sale.date), "dd/MM/yyyy 'às' HH:mm", {
+                    {isClient ? format(new Date(sale.date), "dd/MM/yyyy 'às' HH:mm", {
                       locale: ptBR,
-                    })}
+                    }) : ''}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">

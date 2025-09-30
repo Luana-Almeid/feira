@@ -26,9 +26,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useEffect, useState } from 'react';
 
 export function PurchasesHistory() {
   const purchases = transactions.filter((t) => t.type === 'Compra');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <Card>
@@ -57,9 +63,9 @@ export function PurchasesHistory() {
                     {purchase.id}
                   </TableCell>
                   <TableCell>
-                    {format(new Date(purchase.date), "dd/MM/yyyy 'às' HH:mm", {
+                    {isClient ? format(new Date(purchase.date), "dd/MM/yyyy 'às' HH:mm", {
                       locale: ptBR,
-                    })}
+                    }) : ''}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
