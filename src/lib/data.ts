@@ -38,7 +38,7 @@ export const products: Product[] = [
     unit: 'kg',
     category: 'Fruta',
     image: {
-        imageUrl: "https://images.unsplash.com/photo-1637679231107-2fa35c20b9aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8b3JhbmdlJTIwZnJ1aXR8ZW58MHx8fHwxNzU5MTQ2NTkxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+        imageUrl: "https-images.unsplash.com/photo-1637679231107-2fa35c20b9aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8b3JhbmdlJTIwZnJ1aXR8ZW58MHx8fHwxNzU5MTQ2NTkxfDA&ixlib=rb-4.1.0&q=80&w=1080",
         imageHint: "orange fruit"
     },
     lowStockThreshold: 20,
