@@ -1,7 +1,7 @@
-import { PlusCircle, SlidersHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/page-header';
 import { InventoryClient } from './components/inventory-client';
+import { NewProductDialog } from './components/new-product-dialog';
+import { StockAdjustmentDialog } from './components/stock-adjustment-dialog';
 
 export default function InventoryPage() {
   return (
@@ -10,14 +10,8 @@ export default function InventoryPage() {
         title="Controle de Estoque"
         description="Gerencie seus produtos e o inventário."
       >
-        <Button variant="outline">
-          <SlidersHorizontal className="mr-2 h-4 w-4" />
-          Ajuste de Estoque
-        </Button>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Novo Produto
-        </Button>
+        <StockAdjustmentDialog />
+        <NewProductDialog />
       </PageHeader>
       <InventoryClient />
     </>
