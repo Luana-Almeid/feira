@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { products as initialProducts } from '@/lib/data';
 import type { Product } from '@/lib/types';
@@ -46,13 +45,13 @@ export function InventoryClient() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Buscar produtos..." 
-            className="pl-10"
+            className="pl-10 w-full sm:max-w-xs"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Tabs value={categoryFilter} onValueChange={setCategoryFilter}>
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-4 sm:inline-flex">
                 <TabsTrigger value="Todos">Todos</TabsTrigger>
                 <TabsTrigger value="Fruta">Frutas</TabsTrigger>
                 <TabsTrigger value="Produto Processado">Processados</TabsTrigger>
@@ -60,7 +59,7 @@ export function InventoryClient() {
             </TabsList>
         </Tabs>
       </div>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-8">
         {filteredProducts.map((product) => (
           <Card key={product.id} className="flex flex-col">
             <CardHeader className="relative p-0">

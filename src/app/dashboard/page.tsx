@@ -8,7 +8,7 @@ export default function DashboardPage() {
   return (
     <>
       <PageHeader title="Dashboard" description="Visão geral do seu negócio." />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard 
           title="Faturamento Total" 
           value="R$ 1.250,50" 
@@ -34,7 +34,7 @@ export default function DashboardPage() {
           description="+5.2% da última semana"
         />
       </div>
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5 lg:gap-8">
         <div className="lg:col-span-3">
             <SalesChart />
         </div>

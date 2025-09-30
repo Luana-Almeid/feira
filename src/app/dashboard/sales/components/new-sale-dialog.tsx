@@ -33,6 +33,7 @@ import {
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { products } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
@@ -101,76 +102,78 @@ export function NewSaleDialog() {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-4">
-              {fields.map((field, index) => {
-                const selectedProduct = productMap.get(watchItems[index]?.productId);
-                return (
-                  <div key={field.id} className="grid grid-cols-12 gap-4 items-end">
-                    <FormField
-                      control={form.control}
-                      name={`items.${index}.productId`}
-                      render={({ field }) => (
-                        <FormItem className="col-span-6">
-                          <FormLabel>Produto</FormLabel>
-                          <Select
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                              handleProductChange(value, index);
-                            }}
-                            defaultValue={field.value}
-                          >
+            <ScrollArea className="h-72 w-full">
+              <div className="space-y-4 pr-4">
+                {fields.map((field, index) => {
+                  const selectedProduct = productMap.get(watchItems[index]?.productId);
+                  return (
+                    <div key={field.id} className="grid grid-cols-12 gap-2 sm:gap-4 items-end">
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.productId`}
+                        render={({ field }) => (
+                          <FormItem className="col-span-12 sm:col-span-6">
+                            <FormLabel>Produto</FormLabel>
+                            <Select
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                handleProductChange(value, index);
+                              }}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Selecione um produto" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {products.map((product) => (
+                                  <SelectItem key={product.id} value={product.id}>
+                                    {product.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.quantity`}
+                        render={({ field }) => (
+                          <FormItem className="col-span-4 sm:col-span-2">
+                            <FormLabel>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione um produto" />
-                              </SelectTrigger>
+                              <Input type="number" {...field} />
                             </FormControl>
-                            <SelectContent>
-                              {products.map((product) => (
-                                <SelectItem key={product.id} value={product.id}>
-                                  {product.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`items.${index}.quantity`}
-                      render={({ field }) => (
-                        <FormItem className="col-span-2">
-                          <FormLabel>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`items.${index}.unitPrice`}
-                      render={({ field }) => (
-                        <FormItem className="col-span-3">
-                          <FormLabel>Preço Unit. (R$)</FormLabel>
-                          <FormControl>
-                            <Input type="number" step="0.01" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="col-span-1">
-                      <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
-                          <Trash2 className="h-4 w-4" />
-                      </Button>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.unitPrice`}
+                        render={({ field }) => (
+                          <FormItem className="col-span-6 sm:col-span-3">
+                            <FormLabel>Preço Unit. (R$)</FormLabel>
+                            <FormControl>
+                              <Input type="number" step="0.01" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="col-span-2 sm:col-span-1">
+                        <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            </ScrollArea>
 
             <Button
               type="button"

@@ -1,14 +1,25 @@
 'use client';
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   ChartTooltipContent,
   ChartContainer,
 } from '@/components/ui/chart';
+import { useState, useEffect } from 'react';
 
 
-const chartData = [
+const initialChartData = [
+  { date: 'Seg', sales: 0 },
+  { date: 'Ter', sales: 0 },
+  { date: 'Qua', sales: 0 },
+  { date: 'Qui', sales: 0 },
+  { date: 'Sex', sales: 0 },
+  { date: 'Sáb', sales: 0 },
+  { date: 'Dom', sales: 0 },
+];
+
+const generateChartData = () => [
   { date: 'Seg', sales: Math.floor(Math.random() * 200) + 100 },
   { date: 'Ter', sales: Math.floor(Math.random() * 200) + 100 },
   { date: 'Qua', sales: Math.floor(Math.random() * 200) + 100 },
@@ -20,10 +31,17 @@ const chartData = [
 
 
 export function SalesChart() {
+  const [chartData, setChartData] = useState(initialChartData);
+
+  useEffect(() => {
+    setChartData(generateChartData());
+  }, []);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Vendas da Semana</CardTitle>
+        <CardDescription>Análise dos resultados de vendas dos últimos 7 dias.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer

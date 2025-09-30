@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
   SidebarGroup,
+  SidebarTrigger
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -38,14 +39,15 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <Sidebar>
-      <SidebarHeader>
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
             <Leaf className="h-6 w-6 text-primary-foreground" />
           </div>
           <span className="font-headline text-lg font-bold">Feira Livre</span>
         </div>
+        <SidebarTrigger className="hidden md:flex" />
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
@@ -87,3 +89,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+export * from '@/components/ui/sidebar';
