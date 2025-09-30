@@ -19,6 +19,12 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
+const unitLabels = {
+  unidade: 'unidades',
+  kg: 'kg',
+  caixa: 'caixas'
+};
+
 export function InventoryClient() {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,14 +80,14 @@ export function InventoryClient() {
                 <Badge variant="secondary" className="mb-2">{product.category}</Badge>
               <CardTitle className="text-lg font-headline">{product.name}</CardTitle>
               <CardDescription className="text-primary font-semibold">
-                R$ {product.sellingPrice.toFixed(2).replace('.', ',')}
+                R$ {product.sellingPrice.toFixed(2).replace('.', ',')} / {product.unit}
               </CardDescription>
             </CardContent>
             <CardFooter className="p-4 pt-0">
                 <div className="w-full text-sm text-muted-foreground flex justify-between items-center">
                     <span>Estoque:</span>
                     <span className={`font-bold ${product.stock <= product.lowStockThreshold ? 'text-destructive' : 'text-foreground'}`}>
-                        {product.stock} unidades
+                        {product.stock} {unitLabels[product.unit]}
                     </span>
                 </div>
             </CardFooter>

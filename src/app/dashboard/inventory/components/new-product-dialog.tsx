@@ -37,6 +37,9 @@ const productSchema = z.object({
   purchasePrice: z.coerce.number().min(0, 'O preço de compra não pode ser negativo.'),
   sellingPrice: z.coerce.number().min(0, 'O preço de venda não pode ser negativo.'),
   stock: z.coerce.number().int('O estoque deve ser um número inteiro.').min(0, 'O estoque não pode ser negativo.'),
+  unit: z.enum(['unidade', 'kg', 'caixa'], {
+    required_error: 'A unidade de medida é obrigatória.',
+  }),
   category: z.enum(['Fruta', 'Produto Processado', 'Outro'], {
     required_error: 'A categoria é obrigatória.',
   }),
@@ -57,6 +60,7 @@ export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto"
       purchasePrice: 0,
       sellingPrice: 0,
       stock: 0,
+      unit: undefined,
       category: undefined,
       lowStockThreshold: 0,
     },
@@ -87,7 +91,7 @@ export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto"
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {buttonElement}
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>Adicionar Novo Produto</DialogTitle>
           <DialogDescription>
@@ -137,28 +141,52 @@ export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto"
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoria</FormLabel>
-                   <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma categoria" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Fruta">Fruta</SelectItem>
-                      <SelectItem value="Produto Processado">Produto Processado</SelectItem>
-                      <SelectItem value="Outro">Outro</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categoria</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Fruta">Fruta</SelectItem>
+                        <SelectItem value="Produto Processado">Produto Processado</SelectItem>
+                        <SelectItem value="Outro">Outro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="unit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Unidade de Medida</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="unidade">Unidade (un)</SelectItem>
+                        <SelectItem value="kg">Quilograma (kg)</SelectItem>
+                        <SelectItem value="caixa">Caixa (cx)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
              <div className="grid grid-cols-2 gap-4">
                <FormField
                 control={form.control}

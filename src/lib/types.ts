@@ -6,6 +6,7 @@ export type Product = {
   purchasePrice: number;
   sellingPrice: number;
   stock: number;
+  unit: 'unidade' | 'kg' | 'caixa';
   category: 'Fruta' | 'Produto Processado' | 'Outro';
   image: ImagePlaceholder;
   lowStockThreshold: number;
