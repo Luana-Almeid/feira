@@ -1,0 +1,167 @@
+import type { Product, Transaction } from '@/lib/types';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+const imageMap = new Map(PlaceHolderImages.map(img => [img.id, img]));
+
+export const products: Product[] = [
+  {
+    id: 'prod-001',
+    name: 'Banana Prata',
+    purchasePrice: 2.5,
+    sellingPrice: 4.5,
+    stock: 50,
+    category: 'Fruta',
+    image: imageMap.get('banana')!,
+    lowStockThreshold: 10,
+  },
+  {
+    id: 'prod-002',
+    name: 'Maçã Fuji',
+    purchasePrice: 4.0,
+    sellingPrice: 7.0,
+    stock: 35,
+    category: 'Fruta',
+    image: imageMap.get('apple')!,
+    lowStockThreshold: 10,
+  },
+  {
+    id: 'prod-003',
+    name: 'Laranja Pera',
+    purchasePrice: 3.0,
+    sellingPrice: 5.0,
+    stock: 80,
+    category: 'Fruta',
+    image: imageMap.get('orange')!,
+    lowStockThreshold: 20,
+  },
+  {
+    id: 'prod-004',
+    name: 'Abacaxi Pérola',
+    purchasePrice: 5.0,
+    sellingPrice: 8.0,
+    stock: 8,
+    category: 'Fruta',
+    image: imageMap.get('pineapple')!,
+    lowStockThreshold: 5,
+  },
+  {
+    id: 'prod-005',
+    name: 'Água de Coco 500ml',
+    purchasePrice: 4.0,
+    sellingPrice: 7.0,
+    stock: 15,
+    category: 'Produto Processado',
+    image: imageMap.get('coconut-water')!,
+    lowStockThreshold: 5,
+  },
+  {
+    id: 'prod-006',
+    name: 'Mandioca Descascada',
+    purchasePrice: 3.5,
+    sellingPrice: 6.0,
+    stock: 20,
+    category: 'Outro',
+    image: imageMap.get('yuca')!,
+    lowStockThreshold: 8,
+  },
+  {
+    id: 'prod-007',
+    name: 'Ovos Caipira (dúzia)',
+    purchasePrice: 8.0,
+    sellingPrice: 12.0,
+    stock: 12,
+    category: 'Outro',
+    image: imageMap.get('eggs')!,
+    lowStockThreshold: 5,
+  },
+   {
+    id: 'prod-008',
+    name: 'Manga Tommy',
+    purchasePrice: 3.0,
+    sellingPrice: 5.5,
+    stock: 40,
+    category: 'Fruta',
+    image: imageMap.get('mango')!,
+    lowStockThreshold: 10,
+  },
+  {
+    id: 'prod-009',
+    name: 'Mamão Formosa',
+    purchasePrice: 3.5,
+    sellingPrice: 6.0,
+    stock: 2,
+    category: 'Fruta',
+    image: imageMap.get('papaya')!,
+    lowStockThreshold: 5,
+  },
+  {
+    id: 'prod-010',
+    name: 'Uva Thompson',
+    purchasePrice: 7.0,
+    sellingPrice: 12.0,
+    stock: 25,
+    category: 'Fruta',
+    image: imageMap.get('grapes')!,
+    lowStockThreshold: 8,
+  },
+];
+
+const productMap = new Map(products.map(p => [p.id, p]));
+
+export const transactions: Transaction[] = [
+  {
+    id: 'txn-001',
+    type: 'Venda',
+    date: '2024-07-20T10:30:00Z',
+    items: [
+      { product: productMap.get('prod-001')!, quantity: 2, unitPrice: 4.5 },
+      { product: productMap.get('prod-002')!, quantity: 1, unitPrice: 7.0 },
+    ],
+    total: 16.0,
+  },
+  {
+    id: 'txn-002',
+    type: 'Venda',
+    date: '2024-07-20T11:00:00Z',
+    items: [{ product: productMap.get('prod-003')!, quantity: 5, unitPrice: 5.0 }],
+    total: 25.0,
+  },
+  {
+    id: 'txn-003',
+    type: 'Compra',
+    date: '2024-07-19T04:00:00Z',
+    items: [
+      { product: productMap.get('prod-001')!, quantity: 50, unitPrice: 2.5 },
+      { product: productMap.get('prod-002')!, quantity: 40, unitPrice: 4.0 },
+    ],
+    total: 285.0,
+  },
+  {
+    id: 'txn-004',
+    type: 'Descarte',
+    date: '2024-07-19T18:00:00Z',
+    items: [{ product: productMap.get('prod-004')!, quantity: 2, unitPrice: 5.0 }],
+    total: 10.0,
+    reason: 'Amassado',
+  },
+   {
+    id: 'txn-005',
+    type: 'Venda',
+    date: '2024-07-21T12:15:00Z',
+    items: [
+      { product: productMap.get('prod-008')!, quantity: 3, unitPrice: 5.5 },
+      { product: productMap.get('prod-010')!, quantity: 1, unitPrice: 12.0 },
+    ],
+    total: 28.5,
+  },
+  {
+    id: 'txn-006',
+    type: 'Venda',
+    date: '2024-07-22T09:45:00Z',
+    items: [
+      { product: productMap.get('prod-005')!, quantity: 2, unitPrice: 7.0 },
+      { product: productMap.get('prod-007')!, quantity: 1, unitPrice: 12.0 },
+    ],
+    total: 26.0,
+  },
+];
