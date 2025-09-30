@@ -33,6 +33,7 @@ import {
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { products } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
+import { NewProductDialog } from '@/app/dashboard/inventory/components/new-product-dialog';
 
 const purchaseItemSchema = z.object({
   productId: z.string().min(1, 'Selecione um produto.'),
@@ -165,6 +166,7 @@ export function NewPurchaseDialog() {
                       variant="destructive"
                       size="icon"
                       onClick={() => remove(index)}
+                      disabled={fields.length <= 1}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -173,14 +175,17 @@ export function NewPurchaseDialog() {
               ))}
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => append({ productId: '', quantity: 1, unitPrice: 0 })}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Adicionar Outro Item
-            </Button>
+            <div className="flex gap-2">
+                <Button
+                type="button"
+                variant="outline"
+                onClick={() => append({ productId: '', quantity: 1, unitPrice: 0 })}
+                >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Adicionar Item
+                </Button>
+                <NewProductDialog />
+            </div>
 
             <Separator />
 

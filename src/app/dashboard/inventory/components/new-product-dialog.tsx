@@ -43,7 +43,11 @@ const productSchema = z.object({
   lowStockThreshold: z.coerce.number().int('O limite deve ser um número inteiro.').min(0, 'O limite não pode ser negativo.'),
 });
 
-export function NewProductDialog() {
+type NewProductDialogProps = {
+  asTrigger?: boolean;
+}
+
+export function NewProductDialog({ asTrigger = true }: NewProductDialogProps) {
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
@@ -64,15 +68,17 @@ export function NewProductDialog() {
     setOpen(false); // Close the dialog on successful submission
     form.reset();
   }
+  
+  const triggerButton = (
+    <Button variant={asTrigger ? 'default': 'secondary'}>
+      <PlusCircle className="mr-2 h-4 w-4" />
+      Novo Produto
+    </Button>
+  );
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Novo Produto
-        </Button>
-      </DialogTrigger>
+      {asTrigger ? <DialogTrigger asChild>{triggerButton}</DialogTrigger> : triggerButton}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Adicionar Novo Produto</DialogTitle>
