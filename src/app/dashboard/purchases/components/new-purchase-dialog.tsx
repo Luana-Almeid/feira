@@ -175,7 +175,7 @@ export function NewPurchaseDialog() {
               ))}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
                 <Button
                 type="button"
                 variant="outline"
@@ -184,7 +184,7 @@ export function NewPurchaseDialog() {
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Adicionar Item
                 </Button>
-                <NewProductDialog />
+                <NewProductDialog asTrigger={false} />
             </div>
 
             <Separator />

@@ -45,9 +45,10 @@ const productSchema = z.object({
 
 type NewProductDialogProps = {
   asTrigger?: boolean;
+  buttonText?: string;
 }
 
-export function NewProductDialog({ asTrigger = true }: NewProductDialogProps) {
+export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto" }: NewProductDialogProps) {
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
@@ -72,13 +73,20 @@ export function NewProductDialog({ asTrigger = true }: NewProductDialogProps) {
   const triggerButton = (
     <Button variant={asTrigger ? 'default': 'secondary'}>
       <PlusCircle className="mr-2 h-4 w-4" />
-      Novo Produto
+      {buttonText}
     </Button>
   );
 
+  const buttonElement = asTrigger ? (
+    <DialogTrigger asChild>{triggerButton}</DialogTrigger>
+  ) : (
+    <div onClick={() => setOpen(true)}>{triggerButton}</div>
+  );
+
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {asTrigger ? <DialogTrigger asChild>{triggerButton}</DialogTrigger> : triggerButton}
+      {buttonElement}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Adicionar Novo Produto</DialogTitle>

@@ -11,7 +11,7 @@ export default function InventoryPage() {
         description="Gerencie seus produtos e o inventário."
       >
         <StockAdjustmentDialog />
-        <NewProductDialog asTrigger />
+        <NewProductDialog asTrigger buttonText="Cadastrar Produto" />
       </PageHeader>
       <InventoryClient />
     </>
