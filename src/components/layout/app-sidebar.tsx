@@ -87,7 +87,7 @@ export function AppSidebar() {
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
-        <SidebarTrigger asChild>
+        <SidebarTrigger>
             <Button variant="ghost" className="w-full justify-start">
                 <span className="flex items-center">
                     <ChevronLeft className="mr-2 transition-transform duration-200 group-data-[state=expanded]:rotate-180"/>
