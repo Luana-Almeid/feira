@@ -9,15 +9,13 @@ export default function DashboardLayout({
 }>) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full">
+      <div className="flex min-h-screen w-full flex-col bg-muted/40">
         <AppSidebar />
-        <div className="flex flex-col md:pl-[var(--sidebar-width)] group-data-[collapsible=icon]/sidebar-wrapper:md:pl-[var(--sidebar-width-icon)]">
+        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-[var(--sidebar-width)] group-data-[collapsible=icon]/sidebar-wrapper:sm:pl-[var(--sidebar-width-icon)]">
           <Header />
-          <SidebarInset>
-            <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-              {children}
-            </main>
-          </SidebarInset>
+          <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+            {children}
+          </main>
         </div>
       </div>
     </SidebarProvider>
