@@ -51,7 +51,8 @@ export function StockAdjustmentDialog() {
     resolver: zodResolver(adjustmentSchema),
     defaultValues: {
       adjustmentType: 'add',
-      quantity: 1
+      quantity: 1,
+      reason: ''
     }
   });
 
@@ -86,7 +87,7 @@ export function StockAdjustmentDialog() {
 
       toast({ title: "Estoque ajustado!", description: `O estoque de ${product.name} foi atualizado.`});
       setOpen(false);
-      form.reset({ adjustmentType: 'add', quantity: 1 });
+      form.reset({ adjustmentType: 'add', quantity: 1, reason: '' });
     } catch (error) {
        if (error instanceof Error) {
         toast({ variant: "destructive", title: "Erro ao ajustar estoque", description: error.message });
