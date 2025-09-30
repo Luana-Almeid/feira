@@ -71,7 +71,7 @@ export function PurchasesHistory() {
                     <div className="flex flex-col">
                       {purchase.items.map((item) => (
                         <span key={item.product.id} className="text-sm">
-                          {item.quantity}x {item.product.name}
+                          {item.quantity} {item.product.unit} de {item.product.name}
                         </span>
                       ))}
                     </div>

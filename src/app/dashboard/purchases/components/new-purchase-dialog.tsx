@@ -61,6 +61,7 @@ export function NewPurchaseDialog() {
   });
 
   const productMap = new Map(products.map((p) => [p.id, p]));
+  const watchItems = form.watch('items');
 
   function onSubmit(values: z.infer<typeof purchaseSchema>) {
     console.log(values);
@@ -78,7 +79,6 @@ export function NewPurchaseDialog() {
     }
   };
 
-  const watchItems = form.watch('items');
   const total = watchItems.reduce((acc, currentItem) => {
     const itemTotal = (currentItem.quantity || 0) * (currentItem.unitPrice || 0);
     return acc + itemTotal;
@@ -102,77 +102,80 @@ export function NewPurchaseDialog() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4 max-h-[400px] overflow-y-auto pr-4">
-              {fields.map((field, index) => (
-                <div key={field.id} className="grid grid-cols-12 gap-4 items-end">
-                  <FormField
-                    control={form.control}
-                    name={`items.${index}.productId`}
-                    render={({ field }) => (
-                      <FormItem className="col-span-6">
-                        <FormLabel>Produto</FormLabel>
-                        <Select
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            handleProductChange(value, index);
-                          }}
-                          defaultValue={field.value}
-                        >
+              {fields.map((field, index) => {
+                const selectedProduct = productMap.get(watchItems[index]?.productId);
+                return (
+                  <div key={field.id} className="grid grid-cols-12 gap-4 items-end">
+                    <FormField
+                      control={form.control}
+                      name={`items.${index}.productId`}
+                      render={({ field }) => (
+                        <FormItem className="col-span-6">
+                          <FormLabel>Produto</FormLabel>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              handleProductChange(value, index);
+                            }}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione um produto" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {products.map((product) => (
+                                <SelectItem key={product.id} value={product.id}>
+                                  {product.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`items.${index}.quantity`}
+                      render={({ field }) => (
+                        <FormItem className="col-span-2">
+                          <FormLabel>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
                           <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Selecione um produto" />
-                            </SelectTrigger>
+                            <Input type="number" {...field} />
                           </FormControl>
-                          <SelectContent>
-                            {products.map((product) => (
-                              <SelectItem key={product.id} value={product.id}>
-                                {product.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`items.${index}.quantity`}
-                    render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel>Qtd.</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`items.${index}.unitPrice`}
-                    render={({ field }) => (
-                      <FormItem className="col-span-3">
-                        <FormLabel>Custo Unit. (R$)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="col-span-1">
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => remove(index)}
-                      disabled={fields.length <= 1}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`items.${index}.unitPrice`}
+                      render={({ field }) => (
+                        <FormItem className="col-span-3">
+                          <FormLabel>Custo Unit. (R$)</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.01" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="col-span-1">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => remove(index)}
+                        disabled={fields.length <= 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="flex items-center gap-2">
@@ -184,7 +187,7 @@ export function NewPurchaseDialog() {
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Adicionar Item
                 </Button>
-                <NewProductDialog asTrigger={false} />
+                <NewProductDialog asTrigger={false} buttonText='Cadastrar Novo Produto'/>
             </div>
 
             <Separator />

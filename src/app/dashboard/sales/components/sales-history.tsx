@@ -72,7 +72,7 @@ export function SalesHistory() {
                     <div className="flex flex-col">
                       {sale.items.map((item) => (
                         <span key={item.product.id} className="text-sm">
-                          {item.quantity}x {item.product.name}
+                          {item.quantity} {item.product.unit} de {item.product.name}
                         </span>
                       ))}
                     </div>
