@@ -31,10 +31,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PlusCircle, Trash2 } from 'lucide-react';
-import { products } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
 import { NewProductDialog } from '@/app/dashboard/inventory/components/new-product-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useData } from '@/contexts/data-context';
+import { useToast } from '@/hooks/use-toast';
 
 const purchaseItemSchema = z.object({
   productId: z.string().min(1, 'Selecione um produto.'),
@@ -48,6 +49,8 @@ const purchaseSchema = z.object({
 
 export function NewPurchaseDialog() {
   const [open, setOpen] = useState(false);
+  const { products, addTransaction, adjustStock } = useData();
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof purchaseSchema>>({
     resolver: zodResolver(purchaseSchema),
@@ -65,12 +68,35 @@ export function NewPurchaseDialog() {
   const watchItems = form.watch('items');
 
   function onSubmit(values: z.infer<typeof purchaseSchema>) {
-    console.log(values);
-    // Here you would typically handle the form submission, e.g., by calling an API.
-    // This would then update the stock levels.
-    alert('Compra registrada com sucesso (simulado)!');
-    setOpen(false);
-    form.reset();
+    const total = values.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
+    
+    try {
+        // 1. Add purchase to transactions history
+        addTransaction({
+            id: `txn-${Date.now()}`,
+            type: 'Compra',
+            date: new Date().toISOString(),
+            items: values.items.map(item => ({
+                product: productMap.get(item.productId)!,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+            })),
+            total,
+        });
+
+        // 2. Update stock for each product
+        values.items.forEach(item => {
+            adjustStock(item.productId, item.quantity);
+        });
+
+        toast({ title: "Compra registrada!", description: `Sua compra de R$ ${total.toFixed(2).replace('.', ',')} foi adicionada.`});
+        setOpen(false);
+        form.reset({ items: [{ productId: '', quantity: 1, unitPrice: 0 }] });
+    } catch(error) {
+        if (error instanceof Error) {
+            toast({ variant: 'destructive', title: 'Erro ao registrar compra', description: error.message });
+        }
+    }
   }
 
   const handleProductChange = (productId: string, index: number) => {
@@ -113,13 +139,13 @@ export function NewPurchaseDialog() {
                         name={`items.${index}.productId`}
                         render={({ field }) => (
                           <FormItem className="col-span-12 sm:col-span-6">
-                            <FormLabel>Produto</FormLabel>
+                            <FormLabel className={index > 0 ? 'sr-only' : ''}>Produto</FormLabel>
                             <Select
                               onValueChange={(value) => {
                                 field.onChange(value);
                                 handleProductChange(value, index);
                               }}
-                              defaultValue={field.value}
+                              value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -143,7 +169,7 @@ export function NewPurchaseDialog() {
                         name={`items.${index}.quantity`}
                         render={({ field }) => (
                           <FormItem className="col-span-4 sm:col-span-2">
-                            <FormLabel>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
+                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
                             <FormControl>
                               <Input type="number" {...field} />
                             </FormControl>
@@ -156,7 +182,7 @@ export function NewPurchaseDialog() {
                         name={`items.${index}.unitPrice`}
                         render={({ field }) => (
                           <FormItem className="col-span-6 sm:col-span-3">
-                            <FormLabel>Custo Unit. (R$)</FormLabel>
+                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Custo Unit. (R$)</FormLabel>
                             <FormControl>
                               <Input type="number" step="0.01" {...field} />
                             </FormControl>
@@ -173,6 +199,7 @@ export function NewPurchaseDialog() {
                           disabled={fields.length <= 1}
                         >
                           <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remover item</span>
                         </Button>
                       </div>
                     </div>

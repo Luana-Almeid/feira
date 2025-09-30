@@ -11,12 +11,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { products as initialProducts } from '@/lib/data';
 import type { Product } from '@/lib/types';
 import { ProductActions } from './product-actions';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useData } from '@/contexts/data-context';
 
 const unitLabels = {
   unidade: 'unidades',
@@ -25,7 +25,7 @@ const unitLabels = {
 };
 
 export function InventoryClient() {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const { products, deleteProduct } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todos');
 
@@ -70,9 +70,12 @@ export function InventoryClient() {
                 height={300}
                 className="rounded-t-lg object-cover aspect-[4/3]"
                 data-ai-hint={product.image.imageHint}
+                onError={(e) => {
+                  e.currentTarget.src = 'https://picsum.photos/seed/placeholder/400/300'
+                }}
               />
               <div className="absolute top-2 right-2">
-                <ProductActions product={product} />
+                <ProductActions product={product} onDelete={() => deleteProduct(product.id)} />
               </div>
             </CardHeader>
             <CardContent className="p-4 flex-1">

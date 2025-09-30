@@ -32,7 +32,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { SlidersHorizontal } from 'lucide-react';
-import { products } from '@/lib/data';
+import { useData } from '@/contexts/data-context';
+import { useToast } from '@/hooks/use-toast';
 
 const adjustmentSchema = z.object({
   productId: z.string({ required_error: 'Por favor, selecione um produto.' }),
@@ -43,21 +44,54 @@ const adjustmentSchema = z.object({
 
 export function StockAdjustmentDialog() {
   const [open, setOpen] = useState(false);
+  const { products, adjustStock, addTransaction } = useData();
+  const { toast } = useToast();
   
   const form = useForm<z.infer<typeof adjustmentSchema>>({
     resolver: zodResolver(adjustmentSchema),
     defaultValues: {
-        adjustmentType: 'add',
+      adjustmentType: 'add',
+      quantity: 1
     }
   });
 
   const adjustmentType = form.watch('adjustmentType');
 
   function onSubmit(values: z.infer<typeof adjustmentSchema>) {
-    console.log(values);
-    alert('Estoque ajustado com sucesso (simulado)!');
-    setOpen(false);
-    form.reset();
+    const product = products.find(p => p.id === values.productId);
+    if (!product) {
+      toast({ variant: "destructive", title: "Erro", description: "Produto não encontrado." });
+      return;
+    }
+
+    const quantityToAdjust = values.adjustmentType === 'add' ? values.quantity : -values.quantity;
+    
+    try {
+      adjustStock(values.productId, quantityToAdjust);
+
+      if (values.adjustmentType === 'subtract' && values.reason) {
+        addTransaction({
+            id: `txn-${Date.now()}`,
+            type: 'Descarte',
+            date: new Date().toISOString(),
+            items: [{
+                product: product,
+                quantity: values.quantity,
+                unitPrice: product.purchasePrice
+            }],
+            total: values.quantity * product.purchasePrice,
+            reason: values.reason
+        });
+      }
+
+      toast({ title: "Estoque ajustado!", description: `O estoque de ${product.name} foi atualizado.`});
+      setOpen(false);
+      form.reset({ adjustmentType: 'add', quantity: 1 });
+    } catch (error) {
+       if (error instanceof Error) {
+        toast({ variant: "destructive", title: "Erro ao ajustar estoque", description: error.message });
+      }
+    }
   }
 
   return (
@@ -83,7 +117,7 @@ export function StockAdjustmentDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Produto</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione um produto para ajustar" />
@@ -110,7 +144,7 @@ export function StockAdjustmentDialog() {
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex space-x-4"
                     >
                       <FormItem className="flex items-center space-x-2 space-y-0">

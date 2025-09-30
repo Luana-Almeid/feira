@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -31,6 +31,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PlusCircle } from 'lucide-react';
+import { useData } from '@/contexts/data-context';
+import type { Product } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
 
 const productSchema = z.object({
   name: z.string().min(1, 'O nome do produto é obrigatório.'),
@@ -44,34 +47,87 @@ const productSchema = z.object({
     required_error: 'A categoria é obrigatória.',
   }),
   lowStockThreshold: z.coerce.number().int('O limite deve ser um número inteiro.').min(0, 'O limite não pode ser negativo.'),
+  imageUrl: z.string().url('Por favor, insira uma URL de imagem válida.').optional().or(z.literal('')),
 });
 
 type NewProductDialogProps = {
   asTrigger?: boolean;
   buttonText?: string;
+  productToEdit?: Product | null;
+  onOpenChange?: (open: boolean) => void;
+  open?: boolean;
 }
 
-export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto" }: NewProductDialogProps) {
-  const [open, setOpen] = useState(false);
+export function NewProductDialog({ 
+  asTrigger = true, 
+  buttonText = "Novo Produto",
+  productToEdit,
+  onOpenChange,
+  open: controlledOpen
+}: NewProductDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const { addProduct, updateProduct } = useData();
+  const { toast } = useToast();
+
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
+
   const form = useForm<z.infer<typeof productSchema>>({
     resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: '',
-      purchasePrice: 0,
-      sellingPrice: 0,
-      stock: 0,
-      unit: undefined,
-      category: undefined,
-      lowStockThreshold: 0,
-    },
   });
 
+  useEffect(() => {
+    if (productToEdit) {
+      form.reset({
+        name: productToEdit.name,
+        purchasePrice: productToEdit.purchasePrice,
+        sellingPrice: productToEdit.sellingPrice,
+        stock: productToEdit.stock,
+        unit: productToEdit.unit,
+        category: productToEdit.category,
+        lowStockThreshold: productToEdit.lowStockThreshold,
+        imageUrl: productToEdit.image.imageUrl,
+      });
+    } else {
+      form.reset({
+        name: '',
+        purchasePrice: 0,
+        sellingPrice: 0,
+        stock: 0,
+        unit: undefined,
+        category: undefined,
+        lowStockThreshold: 10,
+        imageUrl: '',
+      });
+    }
+  }, [productToEdit, open, form]);
+
+
   function onSubmit(values: z.infer<typeof productSchema>) {
-    console.log(values);
-    // Here you would typically handle the form submission, e.g., by calling an API.
-    alert('Produto adicionado com sucesso (simulado)!');
-    setOpen(false); // Close the dialog on successful submission
-    form.reset();
+    try {
+      const productData = {
+        ...values,
+        id: productToEdit ? productToEdit.id : `prod-${Date.now()}`,
+        image: {
+          imageUrl: values.imageUrl || 'https://picsum.photos/seed/placeholder/400/300',
+          imageHint: values.name.split(' ').slice(0, 2).join(' ').toLowerCase(),
+        }
+      };
+
+      if (productToEdit) {
+        updateProduct(productData.id, productData);
+        toast({ title: "Produto atualizado!", description: `${values.name} foi atualizado com sucesso.`});
+      } else {
+        addProduct(productData);
+        toast({ title: "Produto adicionado!", description: `${values.name} foi adicionado ao seu inventário.`});
+      }
+      
+      setOpen(false);
+      form.reset();
+    } catch (error) {
+      console.error(error)
+      toast({ variant: 'destructive', title: "Erro ao salvar", description: "Ocorreu um erro ao salvar o produto." });
+    }
   }
   
   const triggerButton = (
@@ -87,15 +143,14 @@ export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto"
     <div onClick={() => setOpen(true)}>{triggerButton}</div>
   );
 
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {buttonElement}
-      <DialogContent className="sm:max-w-[480px]">
+      {!productToEdit && buttonElement}
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle>Adicionar Novo Produto</DialogTitle>
+          <DialogTitle>{productToEdit ? 'Editar Produto' : 'Adicionar Novo Produto'}</DialogTitle>
           <DialogDescription>
-            Preencha as informações abaixo para cadastrar um novo item no seu inventário.
+            {productToEdit ? 'Atualize as informações do produto.' : 'Preencha as informações abaixo para cadastrar um novo item no seu inventário.'}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -108,6 +163,19 @@ export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto"
                   <FormLabel>Nome do Produto</FormLabel>
                   <FormControl>
                     <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL da Imagem</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://exemplo.com/imagem.png" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -148,7 +216,7 @@ export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Categoria</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione" />
@@ -170,7 +238,7 @@ export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Unidade de Medida</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Selecione" />
@@ -195,7 +263,7 @@ export function NewProductDialog({ asTrigger = true, buttonText = "Novo Produto"
                   <FormItem>
                     <FormLabel>Estoque Inicial</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} disabled={!!productToEdit} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

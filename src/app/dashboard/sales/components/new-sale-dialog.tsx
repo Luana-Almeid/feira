@@ -31,9 +31,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PlusCircle, Trash2 } from 'lucide-react';
-import { products } from '@/lib/data';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useData } from '@/contexts/data-context';
+import { useToast } from '@/hooks/use-toast';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
@@ -47,6 +48,8 @@ const saleSchema = z.object({
 
 export function NewSaleDialog() {
   const [open, setOpen] = useState(false);
+  const { products, addTransaction, adjustStock } = useData();
+  const { toast } = useToast();
   
   const form = useForm<z.infer<typeof saleSchema>>({
     resolver: zodResolver(saleSchema),
@@ -65,11 +68,35 @@ export function NewSaleDialog() {
 
 
   function onSubmit(values: z.infer<typeof saleSchema>) {
-    console.log(values);
-    // Here you would typically handle the form submission, e.g., by calling an API.
-    alert('Venda registrada com sucesso (simulado)!');
-    setOpen(false);
-    form.reset();
+    const total = values.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
+
+    try {
+        // 1. Add sale to transactions history
+        addTransaction({
+            id: `txn-${Date.now()}`,
+            type: 'Venda',
+            date: new Date().toISOString(),
+            items: values.items.map(item => ({
+                product: productMap.get(item.productId)!,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+            })),
+            total,
+        });
+
+        // 2. Update stock for each product (subtracting)
+        values.items.forEach(item => {
+            adjustStock(item.productId, -item.quantity);
+        });
+
+        toast({ title: "Venda registrada!", description: `Venda de R$ ${total.toFixed(2).replace('.', ',')} foi finalizada.`});
+        setOpen(false);
+        form.reset({ items: [{ productId: '', quantity: 1, unitPrice: 0 }] });
+    } catch(error) {
+        if (error instanceof Error) {
+            toast({ variant: 'destructive', title: 'Erro ao registrar venda', description: error.message });
+        }
+    }
   }
 
   const handleProductChange = (productId: string, index: number) => {
@@ -113,13 +140,13 @@ export function NewSaleDialog() {
                         name={`items.${index}.productId`}
                         render={({ field }) => (
                           <FormItem className="col-span-12 sm:col-span-6">
-                            <FormLabel>Produto</FormLabel>
+                            <FormLabel className={index > 0 ? 'sr-only' : ''}>Produto</FormLabel>
                             <Select
                               onValueChange={(value) => {
                                 field.onChange(value);
                                 handleProductChange(value, index);
                               }}
-                              defaultValue={field.value}
+                              value={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -128,8 +155,8 @@ export function NewSaleDialog() {
                               </FormControl>
                               <SelectContent>
                                 {products.map((product) => (
-                                  <SelectItem key={product.id} value={product.id}>
-                                    {product.name}
+                                  <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
+                                    {product.name} {product.stock <= 0 && '(Sem estoque)'}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -143,7 +170,7 @@ export function NewSaleDialog() {
                         name={`items.${index}.quantity`}
                         render={({ field }) => (
                           <FormItem className="col-span-4 sm:col-span-2">
-                            <FormLabel>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
+                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
                             <FormControl>
                               <Input type="number" {...field} />
                             </FormControl>
@@ -156,7 +183,7 @@ export function NewSaleDialog() {
                         name={`items.${index}.unitPrice`}
                         render={({ field }) => (
                           <FormItem className="col-span-6 sm:col-span-3">
-                            <FormLabel>Preço Unit. (R$)</FormLabel>
+                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Preço Unit. (R$)</FormLabel>
                             <FormControl>
                               <Input type="number" step="0.01" {...field} />
                             </FormControl>
@@ -167,6 +194,7 @@ export function NewSaleDialog() {
                       <div className="col-span-2 sm:col-span-1">
                         <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
                             <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Remover item</span>
                         </Button>
                       </div>
                     </div>

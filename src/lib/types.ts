@@ -1,4 +1,8 @@
-import type { ImagePlaceholder } from './placeholder-images';
+
+export type ProductImage = {
+  imageUrl: string;
+  imageHint: string;
+};
 
 export type Product = {
   id: string;
@@ -8,19 +12,21 @@ export type Product = {
   stock: number;
   unit: 'unidade' | 'kg' | 'caixa';
   category: 'Fruta' | 'Produto Processado' | 'Outro';
-  image: ImagePlaceholder;
+  image: ProductImage;
   lowStockThreshold: number;
+};
+
+export type TransactionItem = {
+  product: Product;
+  quantity: number;
+  unitPrice: number;
 };
 
 export type Transaction = {
   id: string;
   type: 'Venda' | 'Compra' | 'Descarte';
   date: string;
-  items: {
-    product: Product;
-    quantity: number;
-    unitPrice: number;
-  }[];
+  items: TransactionItem[];
   total: number;
   reason?: string; // for discards
 };

@@ -1,11 +1,14 @@
-import { products } from '@/lib/data';
+'use client';
+
 import type { Product } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle } from 'lucide-react';
+import { useData } from '@/contexts/data-context';
 
 export function LowStockProducts() {
+  const { products } = useData();
   const lowStockProducts = products.filter(
     (p) => p.stock <= p.lowStockThreshold
   );
@@ -36,28 +39,30 @@ export function LowStockProducts() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Produto</TableHead>
-              <TableHead className="text-center">Estoque Atual</TableHead>
-              <TableHead className="text-center">Mínimo</TableHead>
-              <TableHead className="text-right">Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {lowStockProducts.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell className="text-center">{product.stock}</TableCell>
-                <TableCell className="text-center">{product.lowStockThreshold}</TableCell>
-                <TableCell className="text-right">
-                  <Badge variant="destructive">Baixo</Badge>
-                </TableCell>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Produto</TableHead>
+                <TableHead className="text-center">Estoque Atual</TableHead>
+                <TableHead className="text-center">Mínimo</TableHead>
+                <TableHead className="text-right">Status</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {lowStockProducts.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell className="text-center">{product.stock}</TableCell>
+                  <TableCell className="text-center">{product.lowStockThreshold}</TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant="destructive">Baixo</Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

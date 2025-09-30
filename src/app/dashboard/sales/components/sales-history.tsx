@@ -15,10 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { transactions } from '@/lib/data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Badge } from '@/components/ui/badge';
 import { MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,8 +26,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useEffect, useState } from 'react';
+import { useData } from '@/contexts/data-context';
 
 export function SalesHistory() {
+  const { transactions } = useData();
   const sales = transactions.filter((t) => t.type === 'Venda');
   const [isClient, setIsClient] = useState(false);
 
@@ -50,7 +50,7 @@ export function SalesHistory() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[120px]">ID da Venda</TableHead>
+                <TableHead className="hidden sm:table-cell w-[120px]">ID da Venda</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Itens</TableHead>
                 <TableHead className="text-right">Total</TableHead>
@@ -58,9 +58,16 @@ export function SalesHistory() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {sales.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                        Nenhuma venda registrada.
+                    </TableCell>
+                </TableRow>
+              )}
               {sales.map((sale) => (
                 <TableRow key={sale.id}>
-                  <TableCell className="font-mono text-xs font-medium">
+                  <TableCell className="hidden sm:table-cell font-mono text-xs font-medium">
                     {sale.id}
                   </TableCell>
                   <TableCell>
@@ -85,11 +92,12 @@ export function SalesHistory() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
                           <MoreVertical className="h-4 w-4" />
+                           <span className="sr-only">Ações</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem disabled>Ver Detalhes</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" disabled>
                           Cancelar Venda
                         </DropdownMenuItem>
                       </DropdownMenuContent>
