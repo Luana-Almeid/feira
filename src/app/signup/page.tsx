@@ -25,10 +25,10 @@ import { Leaf, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const signupSchema = z.object({
-  name: z.string().min(1, 'O nome é obrigatório.'),
-  cpf: z.string().length(11, 'O CPF deve ter 11 dígitos.'),
-  email: z.string().email('E-mail inválido.'),
-  password: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres.'),
+  name: z.string().min(1, 'O nome é obrigatório.').optional().or(z.literal('')),
+  cpf: z.string().length(11, 'O CPF deve ter 11 dígitos.').optional().or(z.literal('')),
+  email: z.string().email('E-mail inválido.').optional().or(z.literal('')),
+  password: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres.').optional().or(z.literal('')),
 });
 
 export default function SignupPage() {
@@ -48,6 +48,16 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof signupSchema>) {
     setLoading(true);
+    // TEMPORARY: Bypass signup for testing
+    toast({
+        title: 'Redirecionando...',
+        description: 'Cadastro temporariamente desabilitado para teste.',
+    });
+    router.push('/dashboard');
+    setLoading(false);
+    
+    // Original signup logic commented out
+    /*
     try {
       // 1. Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
@@ -83,6 +93,7 @@ export default function SignupPage() {
     } finally {
         setLoading(false);
     }
+    */
   }
 
   return (

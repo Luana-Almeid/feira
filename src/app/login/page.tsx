@@ -24,8 +24,8 @@ import { Leaf, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const loginSchema = z.object({
-  email: z.string().email('E-mail inválido.'),
-  password: z.string().min(1, 'A senha é obrigatória.'),
+  email: z.string().email('E-mail inválido.').optional().or(z.literal('')),
+  password: z.string().min(1, 'A senha é obrigatória.').optional().or(z.literal('')),
 });
 
 export default function LoginPage() {
@@ -43,6 +43,16 @@ export default function LoginPage() {
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setLoading(true);
+    // TEMPORARY: Bypass login for testing
+    toast({
+      title: 'Redirecionando...',
+      description: 'Login temporariamente desabilitado para teste.',
+    });
+    router.push('/dashboard');
+    setLoading(false);
+    
+    // Original login logic commented out
+    /*
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({
@@ -60,6 +70,7 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+    */
   }
 
   return (
