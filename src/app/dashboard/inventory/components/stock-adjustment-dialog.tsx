@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -51,7 +52,7 @@ export function StockAdjustmentDialog() {
     resolver: zodResolver(adjustmentSchema),
     defaultValues: {
       adjustmentType: 'add',
-      quantity: undefined,
+      quantity: '' as any, // Initialize as empty string to be a controlled component
       reason: ''
     }
   });
@@ -89,7 +90,7 @@ export function StockAdjustmentDialog() {
 
       toast({ title: "Estoque ajustado!", description: `O estoque de ${product.name} foi atualizado.`});
       setOpen(false);
-      form.reset({ adjustmentType: 'add', quantity: undefined, reason: '', productId: '' });
+      form.reset({ adjustmentType: 'add', quantity: '' as any, reason: '', productId: '' });
     } catch (error) {
        if (error instanceof Error) {
         toast({ variant: "destructive", title: "Erro ao ajustar estoque", description: error.message });
