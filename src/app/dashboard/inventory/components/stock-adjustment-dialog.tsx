@@ -51,12 +51,14 @@ export function StockAdjustmentDialog() {
     resolver: zodResolver(adjustmentSchema),
     defaultValues: {
       adjustmentType: 'add',
-      quantity: 1,
+      quantity: undefined,
       reason: ''
     }
   });
 
   const adjustmentType = form.watch('adjustmentType');
+  const selectedProductId = form.watch('productId');
+  const selectedProduct = products.find(p => p.id === selectedProductId);
 
   function onSubmit(values: z.infer<typeof adjustmentSchema>) {
     const product = products.find(p => p.id === values.productId);
@@ -87,7 +89,7 @@ export function StockAdjustmentDialog() {
 
       toast({ title: "Estoque ajustado!", description: `O estoque de ${product.name} foi atualizado.`});
       setOpen(false);
-      form.reset({ adjustmentType: 'add', quantity: 1, reason: '' });
+      form.reset({ adjustmentType: 'add', quantity: undefined, reason: '', productId: '' });
     } catch (error) {
        if (error instanceof Error) {
         toast({ variant: "destructive", title: "Erro ao ajustar estoque", description: error.message });
@@ -171,9 +173,11 @@ export function StockAdjustmentDialog() {
               name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantidade</FormLabel>
+                  <FormLabel>
+                    Quantidade {selectedProduct && `(${selectedProduct.unit})`}
+                  </FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <Input type="number" placeholder="0" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
