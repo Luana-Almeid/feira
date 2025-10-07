@@ -63,7 +63,7 @@ export function AppSidebar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <Leaf className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className={cn("font-headline text-lg font-bold", state === 'collapsed' ? "hidden" : "")}>Feira Livre</span>
+          <span className={cn("font-headline text-lg font-bold", state === 'collapsed' ? "hidden" : "")}>Excelência Frutas</span>
         </div>
       </SidebarHeader>
       <SidebarContent className="p-2">
@@ -81,12 +81,9 @@ export function AppSidebar() {
                   isActive={pathname === item.href}
                   tooltip={item.label}
                   className="w-full"
-                  asChild
                 >
-                  <span>
                     <item.icon />
                     <span>{item.label}</span>
-                  </span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>

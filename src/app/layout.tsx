@@ -1,10 +1,11 @@
+
 import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseProvider } from '@/firebase/client-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Feira Livre Manager',
+  title: 'Excelência Frutas',
   description: 'Gerenciador de estoque para feirantes',
 };
 
