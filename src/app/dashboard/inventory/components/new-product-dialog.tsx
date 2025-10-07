@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -87,8 +88,8 @@ export function NewProductDialog({
     } else {
       form.reset({
         name: '',
-        purchasePrice: 0,
-        sellingPrice: 0,
+        purchasePrice: '' as any,
+        sellingPrice: '' as any,
         unit: undefined,
         category: undefined,
         lowStockThreshold: 10,
@@ -212,7 +213,7 @@ export function NewProductDialog({
                   <FormItem>
                     <FormLabel>Preço de Compra (R$)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input type="number" step="0.01" placeholder="R$ 0,00" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -225,7 +226,7 @@ export function NewProductDialog({
                   <FormItem>
                     <FormLabel>Preço de Venda (R$)</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" {...field} />
+                      <Input type="number" step="0.01" placeholder="R$ 0,00" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
