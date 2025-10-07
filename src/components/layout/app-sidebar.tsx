@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -21,19 +22,15 @@ import {
   ShoppingCart,
   Truck,
   BarChart3,
-  LogOut,
   Leaf,
   ChevronLeft,
   Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
-import { auth } from '@/firebase/client';
-import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador'] },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/purchases', label: 'Compras', icon: Truck, roles: ['administrador', 'funcionario'] },
@@ -45,15 +42,18 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { user, profile, loading } = useUser();
-  const router = useRouter();
 
-  const handleSignOut = async () => {
-    await signOut(auth);
-    router.push('/login');
-  };
+  // Mock profile for testing since login is bypassed
+  const mockProfile = {
+      name: 'Admin',
+      email: 'admin@test.com',
+      role: 'administrador'
+  }
+
+  const currentProfile = profile || mockProfile;
 
   const filteredMenuItems = menuItems.filter(item => 
-    profile?.role && item.roles.includes(profile.role)
+    currentProfile?.role && item.roles.includes(currentProfile.role)
   );
 
   return (
@@ -68,7 +68,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {loading ? (
+          {loading && !currentProfile ? (
             <div className="flex flex-col gap-2">
               <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
               <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
@@ -94,17 +94,14 @@ export function AppSidebar() {
          <div className={cn("flex items-center gap-3 p-2 transition-all", state === 'collapsed' ? 'justify-center' : '')}>
             <Avatar className="h-8 w-8">
               <AvatarImage src={user?.photoURL || `https://picsum.photos/seed/${user?.uid}/40/40`} alt="User" />
-              <AvatarFallback>{profile?.name?.[0].toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{currentProfile?.name?.[0].toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className={cn("flex flex-col", state === 'collapsed' ? "hidden": "")}>
-              <span className="text-sm font-semibold">{profile?.name || 'Carregando...'}</span>
+              <span className="text-sm font-semibold">{currentProfile?.name || 'Usuário'}</span>
               <span className="text-xs text-muted-foreground">
-                {user?.email}
+                {currentProfile?.email}
               </span>
             </div>
-            <Button variant="ghost" size="icon" className={cn("ml-auto h-8 w-8", state === 'collapsed' ? "hidden": "")} onClick={handleSignOut}>
-              <LogOut className="h-4 w-4" />
-            </Button>
           </div>
         <SidebarTrigger>
           <Button variant="ghost" className="w-full justify-center">
