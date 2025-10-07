@@ -96,8 +96,8 @@ export function SalesHistory() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem disabled>Ver Detalhes</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive" disabled>
+                        <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">
                           Cancelar Venda
                         </DropdownMenuItem>
                       </DropdownMenuContent>
