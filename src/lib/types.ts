@@ -7,7 +7,7 @@ export type Product = {
   sellingPrice: number;
   stock: number;
   unit: 'unidade' | 'kg';
-  category: 'Fruta' | 'Produto Processado' | 'Outro';
+  category: 'Fruta' | 'Produto Processado' | 'Bebida' | 'Outro';
   lowStockThreshold: number;
 };
 

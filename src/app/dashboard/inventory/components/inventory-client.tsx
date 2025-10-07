@@ -61,10 +61,11 @@ export function InventoryClient() {
         </div>
         <div className="flex items-center gap-2">
             <Tabs value={categoryFilter} onValueChange={setCategoryFilter}>
-                <TabsList className="grid w-full grid-cols-4 sm:inline-flex">
+                <TabsList className="grid w-full grid-cols-5 sm:inline-flex">
                     <TabsTrigger value="Todos">Todos</TabsTrigger>
                     <TabsTrigger value="Fruta">Frutas</TabsTrigger>
                     <TabsTrigger value="Produto Processado">Processados</TabsTrigger>
+                    <TabsTrigger value="Bebida">Bebidas</TabsTrigger>
                     <TabsTrigger value="Outro">Outros</TabsTrigger>
                 </TabsList>
             </Tabs>

@@ -38,7 +38,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const productSchema = z.object({
   name: z.string().min(1, 'O nome do produto é obrigatório.'),
-  category: z.enum(['Fruta', 'Produto Processado', 'Outro'], {
+  category: z.enum(['Fruta', 'Produto Processado', 'Bebida', 'Outro'], {
     required_error: 'A categoria é obrigatória.',
   }),
   unit: z.enum(['unidade', 'kg'], {
@@ -176,6 +176,7 @@ export function NewProductDialog({
                       <SelectContent>
                         <SelectItem value="Fruta">Fruta</SelectItem>
                         <SelectItem value="Produto Processado">Produto Processado</SelectItem>
+                        <SelectItem value="Bebida">Bebida</SelectItem>
                         <SelectItem value="Outro">Outro</SelectItem>
                       </SelectContent>
                     </Select>

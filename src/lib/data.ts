@@ -48,7 +48,7 @@ export const products: Product[] = [
     sellingPrice: 7.0,
     stock: 15,
     unit: 'unidade',
-    category: 'Produto Processado',
+    category: 'Bebida',
     lowStockThreshold: 5,
   },
   {
