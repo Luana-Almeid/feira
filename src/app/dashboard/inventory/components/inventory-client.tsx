@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import {
   Card,
   CardContent,
@@ -18,10 +17,9 @@ import { Search } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useData } from '@/contexts/data-context';
 
-const unitLabels = {
+const unitLabels: Record<Product['unit'], string> = {
   unidade: 'unidades',
   kg: 'kg',
-  caixa: 'caixas'
 };
 
 export function InventoryClient() {
@@ -62,30 +60,19 @@ export function InventoryClient() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-8">
         {filteredProducts.map((product) => (
           <Card key={product.id} className="flex flex-col">
-            <CardHeader className="relative p-0">
-              <Image
-                src={product.image.imageUrl}
-                alt={product.name}
-                width={400}
-                height={300}
-                className="rounded-t-lg object-cover aspect-[4/3]"
-                data-ai-hint={product.image.imageHint}
-                onError={(e) => {
-                  e.currentTarget.src = 'https://picsum.photos/seed/placeholder/400/300'
-                }}
-              />
-              <div className="absolute top-2 right-2">
+            <CardHeader className="relative p-6">
+               <div className="absolute top-2 right-2">
                 <ProductActions product={product} onDelete={() => deleteProduct(product.id)} />
               </div>
-            </CardHeader>
-            <CardContent className="p-4 flex-1">
-                <Badge variant="secondary" className="mb-2">{product.category}</Badge>
+              <Badge variant="secondary" className="w-fit mb-2">{product.category}</Badge>
               <CardTitle className="text-lg font-headline">{product.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 pt-0 flex-1">
               <CardDescription className="text-primary font-semibold">
                 R$ {product.sellingPrice.toFixed(2).replace('.', ',')} / {product.unit}
               </CardDescription>
             </CardContent>
-            <CardFooter className="p-4 pt-0">
+            <CardFooter className="p-6 pt-0">
                 <div className="w-full text-sm text-muted-foreground flex justify-between items-center">
                     <span>Estoque:</span>
                     <span className={`font-bold ${product.stock <= product.lowStockThreshold ? 'text-destructive' : 'text-foreground'}`}>

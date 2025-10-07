@@ -1,18 +1,12 @@
 
-export type ProductImage = {
-  imageUrl: string;
-  imageHint: string;
-};
-
 export type Product = {
   id: string;
   name: string;
   purchasePrice: number;
   sellingPrice: number;
   stock: number;
-  unit: 'unidade' | 'kg' | 'caixa';
+  unit: 'unidade' | 'kg';
   category: 'Fruta' | 'Produto Processado' | 'Outro';
-  image: ProductImage;
   lowStockThreshold: number;
 };
 

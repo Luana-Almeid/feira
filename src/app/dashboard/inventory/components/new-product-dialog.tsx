@@ -37,17 +37,15 @@ import { useToast } from '@/hooks/use-toast';
 
 const productSchema = z.object({
   name: z.string().min(1, 'O nome do produto é obrigatório.'),
-  purchasePrice: z.coerce.number().min(0, 'O preço de compra não pode ser negativo.'),
-  sellingPrice: z.coerce.number().min(0, 'O preço de venda não pode ser negativo.'),
-  stock: z.coerce.number().int('O estoque deve ser um número inteiro.').min(0, 'O estoque não pode ser negativo.'),
-  unit: z.enum(['unidade', 'kg', 'caixa'], {
-    required_error: 'A unidade de medida é obrigatória.',
-  }),
   category: z.enum(['Fruta', 'Produto Processado', 'Outro'], {
     required_error: 'A categoria é obrigatória.',
   }),
+  unit: z.enum(['unidade', 'kg'], {
+    required_error: 'A unidade de medida é obrigatória.',
+  }),
+  purchasePrice: z.coerce.number().min(0, 'O preço de compra não pode ser negativo.'),
+  sellingPrice: z.coerce.number().min(0, 'O preço de venda não pode ser negativo.'),
   lowStockThreshold: z.coerce.number().int('O limite deve ser um número inteiro.').min(0, 'O limite não pode ser negativo.'),
-  imageUrl: z.string().url('Por favor, insira uma URL de imagem válida.').optional().or(z.literal('')),
 });
 
 type NewProductDialogProps = {
@@ -82,22 +80,18 @@ export function NewProductDialog({
         name: productToEdit.name,
         purchasePrice: productToEdit.purchasePrice,
         sellingPrice: productToEdit.sellingPrice,
-        stock: productToEdit.stock,
         unit: productToEdit.unit,
         category: productToEdit.category,
         lowStockThreshold: productToEdit.lowStockThreshold,
-        imageUrl: productToEdit.image.imageUrl,
       });
     } else {
       form.reset({
         name: '',
         purchasePrice: 0,
         sellingPrice: 0,
-        stock: 0,
         unit: undefined,
         category: undefined,
         lowStockThreshold: 10,
-        imageUrl: '',
       });
     }
   }, [productToEdit, open, form]);
@@ -105,13 +99,10 @@ export function NewProductDialog({
 
   function onSubmit(values: z.infer<typeof productSchema>) {
     try {
-      const productData = {
+      const productData: Product = {
         ...values,
         id: productToEdit ? productToEdit.id : `prod-${Date.now()}`,
-        image: {
-          imageUrl: values.imageUrl || 'https://picsum.photos/seed/placeholder/400/300',
-          imageHint: values.name.split(' ').slice(0, 2).join(' ').toLowerCase(),
-        }
+        stock: productToEdit ? productToEdit.stock : 0, // Keep existing stock on edit, or start with 0
       };
 
       if (productToEdit) {
@@ -168,47 +159,6 @@ export function NewProductDialog({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="imageUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL da Imagem</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://exemplo.com/imagem.png" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="purchasePrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preço de Compra (R$)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="sellingPrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preço de Venda (R$)</FormLabel>
-                    <FormControl>
-                      <Input type="number" step="0.01" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -247,7 +197,6 @@ export function NewProductDialog({
                       <SelectContent>
                         <SelectItem value="unidade">Unidade (un)</SelectItem>
                         <SelectItem value="kg">Quilograma (kg)</SelectItem>
-                        <SelectItem value="caixa">Caixa (cx)</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -255,15 +204,15 @@ export function NewProductDialog({
                 )}
               />
             </div>
-             <div className="grid grid-cols-2 gap-4">
-               <FormField
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
                 control={form.control}
-                name="stock"
+                name="purchasePrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estoque Inicial</FormLabel>
+                    <FormLabel>Preço de Compra (R$)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} disabled={!!productToEdit} />
+                      <Input type="number" step="0.01" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -271,18 +220,31 @@ export function NewProductDialog({
               />
               <FormField
                 control={form.control}
-                name="lowStockThreshold"
+                name="sellingPrice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Alerta de Estoque Baixo</FormLabel>
+                    <FormLabel>Preço de Venda (R$)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" step="0.01" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+            <FormField
+              control={form.control}
+              name="lowStockThreshold"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Limite de Estoque Baixo</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
               <Button type="submit">Salvar Produto</Button>
             </DialogFooter>
