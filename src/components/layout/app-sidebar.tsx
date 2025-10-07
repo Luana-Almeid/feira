@@ -24,7 +24,8 @@ import {
   BarChart3,
   Leaf,
   ChevronLeft,
-  Users
+  Users,
+  Lightbulb
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
@@ -34,6 +35,7 @@ const menuItems = [
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/purchases', label: 'Compras', icon: Truck, roles: ['administrador', 'funcionario'] },
+  { href: '/dashboard/recommendations', label: 'Recomendações', icon: Lightbulb, roles: ['administrador'] },
   { href: '/dashboard/employees', label: 'Funcionários', icon: Users, roles: ['administrador'] },
   { href: '/dashboard/reports', label: 'Relatórios', icon: BarChart3, roles: ['administrador'] },
 ];
