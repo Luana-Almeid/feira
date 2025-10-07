@@ -12,12 +12,10 @@ export default function EmployeesPage() {
                 title="Gerenciar Funcionários"
                 description="Adicione, edite e gerencie os perfis dos seus funcionários."
             >
-                <Link href="/dashboard/employees/new" passHref>
-                    <Button>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Cadastrar Funcionário
-                    </Button>
-                </Link>
+                <Button>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Cadastrar Funcionário
+                </Button>
             </PageHeader>
             <EmployeeList />
         </>
