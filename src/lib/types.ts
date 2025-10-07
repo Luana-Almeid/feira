@@ -1,4 +1,5 @@
 
+
 export type Product = {
   id: string;
   name: string;
@@ -24,3 +25,13 @@ export type Transaction = {
   total: number;
   reason?: string; // for discards
 };
+
+export type UserProfile = {
+  uid: string;
+  name: string;
+  email: string;
+  cpf: string;
+  role: 'administrador' | 'funcionario';
+  status: 'ativo' | 'inativo';
+  dismissalDate?: string | null;
+}

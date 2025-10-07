@@ -23,21 +23,38 @@ import {
   BarChart3,
   LogOut,
   Leaf,
-  ChevronLeft
+  ChevronLeft,
+  Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useUser } from '@/hooks/use-user';
+import { auth } from '@/firebase/client';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes },
-  { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart },
-  { href: '/dashboard/purchases', label: 'Compras', icon: Truck },
-  { href: '/dashboard/reports', label: 'Relatórios', icon: BarChart3 },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador'] },
+  { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
+  { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart, roles: ['administrador', 'funcionario'] },
+  { href: '/dashboard/purchases', label: 'Compras', icon: Truck, roles: ['administrador', 'funcionario'] },
+  { href: '/dashboard/employees', label: 'Funcionários', icon: Users, roles: ['administrador'] },
+  { href: '/dashboard/reports', label: 'Relatórios', icon: BarChart3, roles: ['administrador'] },
 ];
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const { user, profile, loading } = useUser();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
+
+  const filteredMenuItems = menuItems.filter(item => 
+    profile?.role && item.roles.includes(profile.role)
+  );
 
   return (
     <Sidebar collapsible="icon">
@@ -51,16 +68,22 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {menuItems.map((item) => (
+          {loading ? (
+            <div className="flex flex-col gap-2">
+              <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
+              <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
+              <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
+            </div>
+          ) : filteredMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} passHref>
+              <Link href={item.href} passHref legacyBehavior>
                 <SidebarMenuButton
                   isActive={pathname === item.href}
                   tooltip={item.label}
                   className="w-full"
                 >
-                  <item.icon />
-                  <span>{item.label}</span>
+                    <item.icon />
+                    <span>{item.label}</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
@@ -70,16 +93,16 @@ export function AppSidebar() {
       <SidebarFooter className="p-2">
          <div className={cn("flex items-center gap-3 p-2 transition-all", state === 'collapsed' ? 'justify-center' : '')}>
             <Avatar className="h-8 w-8">
-              <AvatarImage src="https://picsum.photos/seed/user/40/40" alt="User" />
-              <AvatarFallback>P</AvatarFallback>
+              <AvatarImage src={user?.photoURL || `https://picsum.photos/seed/${user?.uid}/40/40`} alt="User" />
+              <AvatarFallback>{profile?.name?.[0].toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className={cn("flex flex-col", state === 'collapsed' ? "hidden": "")}>
-              <span className="text-sm font-semibold">Proprietário</span>
+              <span className="text-sm font-semibold">{profile?.name || 'Carregando...'}</span>
               <span className="text-xs text-muted-foreground">
-                admin@feira.com
+                {user?.email}
               </span>
             </div>
-            <Button variant="ghost" size="icon" className={cn("ml-auto h-8 w-8", state === 'collapsed' ? "hidden": "")}>
+            <Button variant="ghost" size="icon" className={cn("ml-auto h-8 w-8", state === 'collapsed' ? "hidden": "")} onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
             </Button>
           </div>
