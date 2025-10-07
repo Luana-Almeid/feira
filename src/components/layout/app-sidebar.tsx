@@ -21,7 +21,6 @@ import {
   ShoppingCart,
   Truck,
   BarChart3,
-  Lightbulb,
   LogOut,
   Leaf,
   ChevronLeft
@@ -34,7 +33,6 @@ const menuItems = [
   { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart },
   { href: '/dashboard/purchases', label: 'Compras', icon: Truck },
   { href: '/dashboard/reports', label: 'Relatórios', icon: BarChart3 },
-  { href: '/dashboard/recommendations', label: 'Recomendações', icon: Lightbulb },
 ];
 
 export function AppSidebar() {
@@ -55,18 +53,16 @@ export function AppSidebar() {
         <SidebarMenu>
           {menuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname === item.href}
-                tooltip={item.label}
-              >
-                <Link href={item.href}>
-                  <>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </>
-                </Link>
-              </SidebarMenuButton>
+              <Link href={item.href} passHref>
+                <SidebarMenuButton
+                  isActive={pathname === item.href}
+                  tooltip={item.label}
+                  className="w-full"
+                >
+                  <item.icon />
+                  <span>{item.label}</span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -88,12 +84,12 @@ export function AppSidebar() {
             </Button>
           </div>
         <SidebarTrigger>
-            <Button variant="ghost" className="w-full justify-start">
-                <span className="flex items-center">
-                    <ChevronLeft className="mr-2 transition-transform duration-200 group-data-[state=expanded]:rotate-180"/>
-                    <span>Recolher</span>
-                </span>
-            </Button>
+          <Button variant="ghost" className="w-full justify-center">
+              <span className="flex items-center justify-center">
+                  <ChevronLeft className="mr-2 transition-transform duration-200 group-data-[state=expanded]:rotate-180"/>
+                  <span className={cn(state === 'collapsed' ? 'hidden' : '')}>Recolher</span>
+              </span>
+          </Button>
         </SidebarTrigger>
       </SidebarFooter>
     </Sidebar>
