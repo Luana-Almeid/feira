@@ -1,20 +1,12 @@
 
-'use client';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { PageHeader } from '@/components/page-header';
+import { DashboardClient } from '@/components/dashboard/dashboard-client';
 
-export default function RootPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Directly redirect to the dashboard, as login is being bypassed.
-    router.push('/dashboard');
-  }, [router]);
-
+export default function DashboardPage() {
   return (
-    <div className="flex h-screen w-screen items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
+    <>
+      <PageHeader title="Dashboard" description="Visão geral do seu negócio." />
+      <DashboardClient />
+    </>
   );
 }
