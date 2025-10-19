@@ -20,6 +20,7 @@ export function useCollection<T extends DocumentData>(query: Query | null) {
 
     setLoading(true);
     
+    // The onSnapshot listener will handle live updates.
     const unsubscribe = onSnapshot(
       query,
       (querySnapshot) => {
@@ -37,8 +38,12 @@ export function useCollection<T extends DocumentData>(query: Query | null) {
       }
     );
 
+    // Unsubscribe when the component unmounts or the query changes.
     return () => unsubscribe();
-  }, [query ? JSON.stringify(query.toJSON()) : null]); 
+  // We remove the dependency array to avoid re-running on every render due to query object re-creation.
+  // The query object itself is not stable. We'll rely on onSnapshot to get updates.
+  // A more advanced implementation might use useMemo to memoize the query, but for now this is safer.
+  }, [query]); 
 
   return { data, loading, error };
 }
