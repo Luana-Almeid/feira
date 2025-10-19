@@ -1,3 +1,4 @@
+
 import { PageHeader } from '@/components/page-header';
 import { InventoryClient } from './components/inventory-client';
 import { NewProductDialog } from './components/new-product-dialog';

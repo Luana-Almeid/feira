@@ -31,10 +31,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PlusCircle } from 'lucide-react';
-import { useData } from '@/contexts/data-context';
+import { Loader2, PlusCircle } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { db } from '@/firebase/client';
 
 const productSchema = z.object({
   name: z.string().min(1, 'O nome do produto é obrigatório.'),
@@ -65,7 +66,7 @@ export function NewProductDialog({
   open: controlledOpen
 }: NewProductDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const { addProduct, updateProduct } = useData();
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const open = controlledOpen ?? internalOpen;
@@ -98,19 +99,21 @@ export function NewProductDialog({
   }, [productToEdit, open, form]);
 
 
-  function onSubmit(values: z.infer<typeof productSchema>) {
+  async function onSubmit(values: z.infer<typeof productSchema>) {
+    setLoading(true);
     try {
-      const productData: Product = {
-        ...values,
-        id: productToEdit ? productToEdit.id : `prod-${Date.now()}`,
-        stock: productToEdit ? productToEdit.stock : 0, // Keep existing stock on edit, or start with 0
-      };
-
       if (productToEdit) {
-        updateProduct(productData.id, productData);
+        const productRef = doc(db, 'products', productToEdit.id);
+        await updateDoc(productRef, values);
         toast({ title: "Produto atualizado!", description: `${values.name} foi atualizado com sucesso.`});
       } else {
-        addProduct(productData);
+        const newProductRef = doc(collection(db, 'products'));
+        const newProduct: Product = {
+            ...values,
+            id: newProductRef.id,
+            stock: 0,
+        };
+        await setDoc(newProductRef, newProduct);
         toast({ title: "Produto adicionado!", description: `${values.name} foi adicionado ao seu inventário.`});
       }
       
@@ -119,6 +122,8 @@ export function NewProductDialog({
     } catch (error) {
       console.error(error)
       toast({ variant: 'destructive', title: "Erro ao salvar", description: "Ocorreu um erro ao salvar o produto." });
+    } finally {
+        setLoading(false);
     }
   }
   
@@ -248,7 +253,10 @@ export function NewProductDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit">Salvar Produto</Button>
+              <Button type="submit" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Salvar Produto
+              </Button>
             </DialogFooter>
           </form>
         </Form>

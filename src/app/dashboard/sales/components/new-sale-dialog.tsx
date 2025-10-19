@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -30,11 +31,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection } from '@/hooks/use-collection';
+import { collection, doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/firebase/client';
+import { type Product } from '@/lib/types';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
@@ -48,7 +52,8 @@ const saleSchema = z.object({
 
 export function NewSaleDialog() {
   const [open, setOpen] = useState(false);
-  const { products, addTransaction, adjustStock } = useData();
+  const [loading, setLoading] = useState(false);
+  const { data: products, loading: productsLoading } = useCollection<Product>(collection(db, 'products'));
   const { toast } = useToast();
   
   const form = useForm<z.infer<typeof saleSchema>>({
@@ -67,26 +72,45 @@ export function NewSaleDialog() {
   const watchItems = form.watch("items");
 
 
-  function onSubmit(values: z.infer<typeof saleSchema>) {
+  async function onSubmit(values: z.infer<typeof saleSchema>) {
+    setLoading(true);
     const total = values.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
 
     try {
-        // 1. Add sale to transactions history
-        addTransaction({
-            id: `txn-${Date.now()}`,
-            type: 'Venda',
-            date: new Date().toISOString(),
-            items: values.items.map(item => ({
-                product: productMap.get(item.productId)!,
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
-            })),
-            total,
-        });
+        await runTransaction(db, async (transaction) => {
+            const transactionRef = doc(collection(db, 'transactions'));
+            
+            const itemDetails = [];
+            
+            for (const item of values.items) {
+                const productRef = doc(db, 'products', item.productId);
+                const productDoc = await transaction.get(productRef);
+                if (!productDoc.exists()) {
+                    throw new Error("Um dos produtos selecionados não foi encontrado.");
+                }
 
-        // 2. Update stock for each product (subtracting)
-        values.items.forEach(item => {
-            adjustStock(item.productId, -item.quantity);
+                const productData = productDoc.data() as Product;
+                const newStock = productData.stock - item.quantity;
+                if (newStock < 0) {
+                    throw new Error(`Estoque insuficiente para ${productData.name}. Apenas ${productData.stock} disponíveis.`);
+                }
+
+                transaction.update(productRef, { stock: newStock });
+                itemDetails.push({
+                    productId: item.productId,
+                    productName: productData.name,
+                    quantity: item.quantity,
+                    unitPrice: item.unitPrice,
+                });
+            }
+
+            transaction.set(transactionRef, {
+                id: transactionRef.id,
+                type: 'Venda',
+                date: serverTimestamp(),
+                items: itemDetails,
+                total,
+            });
         });
 
         toast({ title: "Venda registrada!", description: `Venda de R$ ${total.toFixed(2).replace('.', ',')} foi finalizada.`});
@@ -95,7 +119,11 @@ export function NewSaleDialog() {
     } catch(error) {
         if (error instanceof Error) {
             toast({ variant: 'destructive', title: 'Erro ao registrar venda', description: error.message });
+        } else {
+            toast({ variant: 'destructive', title: 'Erro ao registrar venda', description: String(error) });
         }
+    } finally {
+        setLoading(false);
     }
   }
 
@@ -115,7 +143,7 @@ export function NewSaleDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button disabled>
+        <Button>
           <PlusCircle className="mr-2 h-4 w-4" />
           Registrar Venda
         </Button>
@@ -150,7 +178,7 @@ export function NewSaleDialog() {
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Selecione um produto" />
+                                  <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -222,7 +250,10 @@ export function NewSaleDialog() {
             </div>
 
             <DialogFooter>
-              <Button type="submit">Finalizar Venda</Button>
+              <Button type="submit" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Finalizar Venda
+              </Button>
             </DialogFooter>
           </form>
         </Form>

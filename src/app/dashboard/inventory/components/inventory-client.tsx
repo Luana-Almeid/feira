@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -22,10 +23,13 @@ import type { Product } from '@/lib/types';
 import { ProductActions } from './product-actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, LayoutGrid, List } from 'lucide-react';
+import { Search, LayoutGrid, List, Loader2 } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useData } from '@/contexts/data-context';
 import { cn } from '@/lib/utils';
+import { useCollection } from '@/hooks/use-collection';
+import { collection, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
+import { db } from '@/firebase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const unitLabels: Record<Product['unit'], string> = {
   unidade: 'unidades',
@@ -33,10 +37,22 @@ const unitLabels: Record<Product['unit'], string> = {
 };
 
 export function InventoryClient() {
-  const { products, deleteProduct } = useData();
+  const { data: products, loading } = useCollection<Product>(
+    query(collection(db, 'products'), orderBy('name'))
+  );
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todos');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  const deleteProduct = async (productId: string) => {
+    try {
+      await deleteDoc(doc(db, 'products', productId));
+      toast({ title: "Produto excluído", description: "O produto foi removido do seu inventário."});
+    } catch (error) {
+      toast({ variant: 'destructive', title: "Erro ao excluir", description: "Não foi possível excluir o produto."});
+    }
+  };
 
   const filteredProducts = products
     .filter((product) =>
@@ -80,7 +96,11 @@ export function InventoryClient() {
         </div>
       </div>
       
-      {viewMode === 'grid' ? (
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-8">
             {filteredProducts.map((product) => (
             <Card key={product.id} className="flex flex-col">

@@ -1,9 +1,13 @@
 
 import { useState, useEffect } from 'react';
-import { onSnapshot, Query } from 'firebase/firestore';
+import { onSnapshot, Query, DocumentData } from 'firebase/firestore';
 
-export function useCollection<T>(query: Query | null) {
-  const [data, setData] = useState<T[]>([]);
+interface WithId {
+    id: string;
+}
+
+export function useCollection<T extends DocumentData>(query: Query | null) {
+  const [data, setData] = useState<(T & WithId)[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -19,22 +23,22 @@ export function useCollection<T>(query: Query | null) {
     const unsubscribe = onSnapshot(
       query,
       (querySnapshot) => {
-        const data: T[] = [];
+        const data: (T & WithId)[] = [];
         querySnapshot.forEach((doc) => {
-          data.push({ id: doc.id, ...doc.data() } as any);
+          data.push({ id: doc.id, ...doc.data() } as T & WithId);
         });
         setData(data);
         setLoading(false);
       },
       (err) => {
-        console.error(err);
+        console.error("Firebase Snapshot Error:", err);
         setError(err);
         setLoading(false);
       }
     );
 
     return () => unsubscribe();
-  }, [JSON.stringify(query)]); // Simple re-fetch dependency
+  }, [query ? JSON.stringify(query.toJSON()) : null]); 
 
   return { data, loading, error };
 }

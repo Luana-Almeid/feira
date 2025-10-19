@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -17,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { MoreVertical } from 'lucide-react';
+import { Loader2, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,17 +26,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useEffect, useState } from 'react';
-import { useData } from '@/contexts/data-context';
+import { useCollection } from '@/hooks/use-collection';
+import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { db } from '@/firebase/client';
+import { type Transaction } from '@/lib/types';
+
 
 export function SalesHistory() {
-  const { transactions } = useData();
-  const sales = transactions.filter((t) => t.type === 'Venda');
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { data: sales, loading } = useCollection<Transaction>(
+    query(collection(db, 'transactions'), where('type', '==', 'Venda'), orderBy('date', 'desc'))
+  );
 
   return (
     <Card>
@@ -58,7 +58,14 @@ export function SalesHistory() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sales.length === 0 && (
+              {loading && (
+                <TableRow>
+                    <TableCell colSpan={5} className="text-center h-24">
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary"/>
+                    </TableCell>
+                </TableRow>
+              )}
+              {!loading && sales.length === 0 && (
                 <TableRow>
                     <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
                         Nenhuma venda registrada.
@@ -68,18 +75,18 @@ export function SalesHistory() {
               {sales.map((sale) => (
                 <TableRow key={sale.id}>
                   <TableCell className="hidden sm:table-cell font-mono text-xs font-medium">
-                    {sale.id}
+                    {sale.id.substring(0, 8)}...
                   </TableCell>
                   <TableCell>
-                    {isClient ? format(new Date(sale.date), "dd/MM/yyyy 'às' HH:mm", {
+                    {sale.date && format( (sale.date as Timestamp).toDate(), "dd/MM/yyyy 'às' HH:mm", {
                       locale: ptBR,
-                    }) : ''}
+                    })}
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      {sale.items.map((item) => (
-                        <span key={item.product.id} className="text-sm">
-                          {item.quantity} {item.product.unit} de {item.product.name}
+                      {sale.items.map((item, index) => (
+                        <span key={index} className="text-sm">
+                          {item.quantity} {item.productName}
                         </span>
                       ))}
                     </div>

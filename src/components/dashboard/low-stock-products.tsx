@@ -1,17 +1,36 @@
+
 'use client';
 
 import type { Product } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle } from 'lucide-react';
-import { useData } from '@/contexts/data-context';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useCollection } from '@/hooks/use-collection';
+import { collection, query, where } from 'firebase/firestore';
+import { db } from '@/firebase/client';
+
 
 export function LowStockProducts() {
-  const { products } = useData();
-  const lowStockProducts = products.filter(
-    (p) => p.stock <= p.lowStockThreshold
+  const { data: products, loading } = useCollection<Product>(
+    query(collection(db, 'products'), where('stock', '<=', 10)) // Example threshold, adjust as needed
   );
+
+  const lowStockProducts = products.filter(p => p.stock <= p.lowStockThreshold);
+
+  if (loading) {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Estoque Baixo</CardTitle>
+                <CardDescription>Analisando níveis de estoque...</CardDescription>
+            </CardHeader>
+            <CardContent className='flex justify-center items-center h-24'>
+                <Loader2 className="h-6 w-6 animate-spin text-primary"/>
+            </CardContent>
+        </Card>
+    )
+  }
 
   if (lowStockProducts.length === 0) {
     return (

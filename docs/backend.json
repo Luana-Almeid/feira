@@ -40,6 +40,48 @@
         }
       },
       "required": ["uid", "name", "email", "cpf", "role", "status"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Represents a product in inventory.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "purchasePrice": { "type": "number" },
+        "sellingPrice": { "type": "number" },
+        "stock": { "type": "number" },
+        "unit": { "type": "string", "enum": ["unidade", "kg"] },
+        "category": { "type": "string", "enum": ["Fruta", "Produto Processado", "Bebida", "Outro"] },
+        "lowStockThreshold": { "type": "number" }
+      },
+      "required": ["id", "name", "purchasePrice", "sellingPrice", "stock", "unit", "category", "lowStockThreshold"]
+    },
+    "Transaction": {
+        "title": "Transaction",
+        "description": "Represents a sale, purchase, or discard transaction.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string" },
+            "type": { "type": "string", "enum": ["Venda", "Compra", "Descarte"] },
+            "date": { "type": "string", "format": "date-time" },
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "productId": { "type": "string" },
+                        "productName": { "type": "string" },
+                        "quantity": { "type": "number" },
+                        "unitPrice": { "type": "number" }
+                    },
+                    "required": ["productId", "productName", "quantity", "unitPrice"]
+                }
+            },
+            "total": { "type": "number" },
+            "reason": { "type": "string" }
+        },
+        "required": ["id", "type", "date", "items", "total"]
     }
   },
   "auth": {
@@ -51,6 +93,18 @@
         "$ref": "#/entities/UserProfile"
       },
       "description": "Stores public profile information for each user, keyed by their UID."
+    },
+    "/products/{productId}": {
+      "schema": {
+        "$ref": "#/entities/Product"
+      },
+      "description": "Stores inventory product information."
+    },
+    "/transactions/{transactionId}": {
+        "schema": {
+            "$ref": "#/entities/Transaction"
+        },
+        "description": "Stores all sale, purchase, and discard transactions."
     }
   }
 }

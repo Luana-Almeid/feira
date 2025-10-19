@@ -32,9 +32,12 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { SlidersHorizontal } from 'lucide-react';
-import { useData } from '@/contexts/data-context';
+import { Loader2, SlidersHorizontal } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { collection, doc, runTransaction, serverTimestamp, setDoc } from 'firebase/firestore';
+import { db } from '@/firebase/client';
+import { useCollection } from '@/hooks/use-collection';
+import type { Product } from '@/lib/types';
 
 const adjustmentSchema = z.object({
   productId: z.string({ required_error: 'Por favor, selecione um produto.' }),
@@ -45,14 +48,15 @@ const adjustmentSchema = z.object({
 
 export function StockAdjustmentDialog() {
   const [open, setOpen] = useState(false);
-  const { products, adjustStock, addTransaction } = useData();
+  const [loading, setLoading] = useState(false);
+  const { data: products, loading: productsLoading } = useCollection<Product>(collection(db, 'products'));
   const { toast } = useToast();
   
   const form = useForm<z.infer<typeof adjustmentSchema>>({
     resolver: zodResolver(adjustmentSchema),
     defaultValues: {
       adjustmentType: 'add',
-      quantity: '' as any, // Initialize as empty string to be a controlled component
+      quantity: '' as any,
       reason: ''
     }
   });
@@ -61,40 +65,53 @@ export function StockAdjustmentDialog() {
   const selectedProductId = form.watch('productId');
   const selectedProduct = products.find(p => p.id === selectedProductId);
 
-  function onSubmit(values: z.infer<typeof adjustmentSchema>) {
-    const product = products.find(p => p.id === values.productId);
-    if (!product) {
-      toast({ variant: "destructive", title: "Erro", description: "Produto não encontrado." });
-      return;
-    }
+  async function onSubmit(values: z.infer<typeof adjustmentSchema>) {
+    setLoading(true);
+    const productRef = doc(db, 'products', values.productId);
 
-    const quantityToAdjust = values.adjustmentType === 'add' ? values.quantity : -values.quantity;
-    
     try {
-      adjustStock(values.productId, quantityToAdjust);
+        await runTransaction(db, async (transaction) => {
+            const productDoc = await transaction.get(productRef);
+            if (!productDoc.exists()) {
+                throw "Produto não encontrado!";
+            }
 
-      if (values.adjustmentType === 'subtract' && values.reason) {
-        addTransaction({
-            id: `txn-${Date.now()}`,
-            type: 'Descarte',
-            date: new Date().toISOString(),
-            items: [{
-                product: product,
-                quantity: values.quantity,
-                unitPrice: product.purchasePrice
-            }],
-            total: values.quantity * product.purchasePrice,
-            reason: values.reason
+            const productData = productDoc.data() as Product;
+            const quantityToAdjust = values.adjustmentType === 'add' ? values.quantity : -values.quantity;
+            const newStock = productData.stock + quantityToAdjust;
+
+            if (newStock < 0) {
+                throw `Estoque insuficiente para ${productData.name}. Apenas ${productData.stock} disponíveis.`;
+            }
+
+            transaction.update(productRef, { stock: newStock });
+
+            if (values.adjustmentType === 'subtract' && values.reason) {
+                const discardTransactionRef = doc(collection(db, 'transactions'));
+                transaction.set(discardTransactionRef, {
+                    id: discardTransactionRef.id,
+                    type: 'Descarte',
+                    date: serverTimestamp(),
+                    items: [{
+                        productId: productData.id,
+                        productName: productData.name,
+                        quantity: values.quantity,
+                        unitPrice: productData.purchasePrice
+                    }],
+                    total: values.quantity * productData.purchasePrice,
+                    reason: values.reason
+                });
+            }
         });
-      }
 
-      toast({ title: "Estoque ajustado!", description: `O estoque de ${product.name} foi atualizado.`});
-      setOpen(false);
-      form.reset({ adjustmentType: 'add', quantity: '' as any, reason: '', productId: '' });
+        toast({ title: "Estoque ajustado!", description: `O estoque de ${selectedProduct?.name} foi atualizado.`});
+        setOpen(false);
+        form.reset({ adjustmentType: 'add', quantity: '' as any, reason: '', productId: '' });
     } catch (error) {
-       if (error instanceof Error) {
-        toast({ variant: "destructive", title: "Erro ao ajustar estoque", description: error.message });
-      }
+       const errorMessage = error instanceof Error ? error.message : String(error);
+       toast({ variant: "destructive", title: "Erro ao ajustar estoque", description: errorMessage });
+    } finally {
+        setLoading(false);
     }
   }
 
@@ -124,7 +141,7 @@ export function StockAdjustmentDialog() {
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecione um produto para ajustar" />
+                        <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto para ajustar"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -200,7 +217,10 @@ export function StockAdjustmentDialog() {
               />
             )}
             <DialogFooter>
-              <Button type="submit">Confirmar Ajuste</Button>
+              <Button type="submit" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Confirmar Ajuste
+              </Button>
             </DialogFooter>
           </form>
         </Form>

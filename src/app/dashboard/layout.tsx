@@ -4,7 +4,6 @@
 import { AppSidebar } from '@/components/layout/app-sidebar';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Header } from '@/components/layout/header';
-import { DataProvider } from '@/contexts/data-context';
 import { FirebaseProvider } from '@/firebase/client-provider';
 
 export default function DashboardLayout({
@@ -15,7 +14,6 @@ export default function DashboardLayout({
 
   return (
     <FirebaseProvider>
-      <DataProvider>
         <SidebarProvider>
           <div className="flex min-h-screen w-full bg-muted/40">
             <AppSidebar />
@@ -27,7 +25,6 @@ export default function DashboardLayout({
             </div>
           </div>
         </SidebarProvider>
-      </DataProvider>
     </FirebaseProvider>
   );
 }

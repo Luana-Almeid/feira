@@ -1,4 +1,5 @@
 
+import { Timestamp } from 'firebase/firestore';
 
 export type Product = {
   id: string;
@@ -12,7 +13,8 @@ export type Product = {
 };
 
 export type TransactionItem = {
-  product: Product;
+  productId: string;
+  productName: string;
   quantity: number;
   unitPrice: number;
 };
@@ -20,7 +22,7 @@ export type TransactionItem = {
 export type Transaction = {
   id: string;
   type: 'Venda' | 'Compra' | 'Descarte';
-  date: string;
+  date: Timestamp | Date | string;
   items: TransactionItem[];
   total: number;
   reason?: string; // for discards

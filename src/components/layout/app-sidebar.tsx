@@ -28,6 +28,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
+import { auth } from '@/firebase/client';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
@@ -42,18 +45,16 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { user, profile, loading } = useUser();
+  const router = useRouter();
 
-  // Mock profile for testing since login is bypassed
-  const mockProfile = {
-      name: 'Admin',
-      email: 'admin@test.com',
-      role: 'administrador'
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/login');
   }
 
-  const currentProfile = profile || mockProfile;
-
   const filteredMenuItems = menuItems.filter(item => 
-    currentProfile?.role && item.roles.includes(currentProfile.role)
+    profile?.role && item.roles.includes(profile.role)
   );
 
   return (
@@ -68,7 +69,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {loading && !currentProfile ? (
+          {loading && !profile ? (
             <div className="flex flex-col gap-2">
               <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
               <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
@@ -78,12 +79,15 @@ export function AppSidebar() {
             <SidebarMenuItem key={item.href}>
               <Link href={item.href}>
                 <SidebarMenuButton
+                  asChild
                   isActive={pathname === item.href}
                   tooltip={item.label}
                   className="w-full"
                 >
-                    <item.icon />
-                    <span>{item.label}</span>
+                    <p>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </p>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
@@ -94,12 +98,12 @@ export function AppSidebar() {
          <div className={cn("flex items-center gap-3 p-2 transition-all", state === 'collapsed' ? 'justify-center' : '')}>
             <Avatar className="h-8 w-8">
               <AvatarImage src={user?.photoURL || `https://picsum.photos/seed/${user?.uid}/40/40`} alt="User" />
-              <AvatarFallback>{currentProfile?.name?.[0].toUpperCase()}</AvatarFallback>
+              <AvatarFallback>{profile?.name?.[0].toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className={cn("flex flex-col", state === 'collapsed' ? "hidden": "")}>
-              <span className="text-sm font-semibold">{currentProfile?.name || 'Usuário'}</span>
+              <span className="text-sm font-semibold">{profile?.name || 'Usuário'}</span>
               <span className="text-xs text-muted-foreground">
-                {currentProfile?.email}
+                {profile?.email}
               </span>
             </div>
           </div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -30,12 +31,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { NewProductDialog } from '@/app/dashboard/inventory/components/new-product-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useData } from '@/contexts/data-context';
 import { useToast } from '@/hooks/use-toast';
+import { useCollection } from '@/hooks/use-collection';
+import { collection, doc, runTransaction, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { db } from '@/firebase/client';
+import { type Product } from '@/lib/types';
 
 const purchaseItemSchema = z.object({
   productId: z.string().min(1, 'Selecione um produto.'),
@@ -49,7 +53,8 @@ const purchaseSchema = z.object({
 
 export function NewPurchaseDialog() {
   const [open, setOpen] = useState(false);
-  const { products, addTransaction, adjustStock } = useData();
+  const [loading, setLoading] = useState(false);
+  const { data: products, loading: productsLoading } = useCollection<Product>(collection(db, 'products'));
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof purchaseSchema>>({
@@ -67,17 +72,22 @@ export function NewPurchaseDialog() {
   const productMap = new Map(products.map((p) => [p.id, p]));
   const watchItems = form.watch('items');
 
-  function onSubmit(values: z.infer<typeof purchaseSchema>) {
+  async function onSubmit(values: z.infer<typeof purchaseSchema>) {
+    setLoading(true);
     const total = values.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
-    
+
     try {
-        // 1. Add purchase to transactions history
-        addTransaction({
-            id: `txn-${Date.now()}`,
+        const batch = writeBatch(db);
+
+        // 1. Create transaction doc
+        const transactionRef = doc(collection(db, 'transactions'));
+        batch.set(transactionRef, {
+            id: transactionRef.id,
             type: 'Compra',
-            date: new Date().toISOString(),
+            date: serverTimestamp(),
             items: values.items.map(item => ({
-                product: productMap.get(item.productId)!,
+                productId: item.productId,
+                productName: productMap.get(item.productId)?.name,
                 quantity: item.quantity,
                 unitPrice: item.unitPrice,
             })),
@@ -86,16 +96,26 @@ export function NewPurchaseDialog() {
 
         // 2. Update stock for each product
         values.items.forEach(item => {
-            adjustStock(item.productId, item.quantity);
+            const product = productMap.get(item.productId);
+            if (product) {
+                const productRef = doc(db, 'products', item.productId);
+                const newStock = product.stock + item.quantity;
+                batch.update(productRef, { stock: newStock });
+            }
         });
+
+        await batch.commit();
 
         toast({ title: "Compra registrada!", description: `Sua compra de R$ ${total.toFixed(2).replace('.', ',')} foi adicionada.`});
         setOpen(false);
         form.reset({ items: [{ productId: '', quantity: 1, unitPrice: 0 }] });
     } catch(error) {
+        console.error(error);
         if (error instanceof Error) {
             toast({ variant: 'destructive', title: 'Erro ao registrar compra', description: error.message });
         }
+    } finally {
+        setLoading(false);
     }
   }
 
@@ -149,7 +169,7 @@ export function NewPurchaseDialog() {
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Selecione um produto" />
+                                  <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -230,7 +250,10 @@ export function NewPurchaseDialog() {
             </div>
 
             <DialogFooter>
-              <Button type="submit">Salvar Compra</Button>
+              <Button type="submit" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Salvar Compra
+              </Button>
             </DialogFooter>
           </form>
         </Form>
