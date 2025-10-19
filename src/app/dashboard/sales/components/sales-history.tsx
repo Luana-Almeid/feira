@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Loader2, MoreVertical } from 'lucide-react';
+import { Loader2, MoreVertical, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -27,20 +27,83 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCollection } from '@/hooks/use-collection';
-import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, Timestamp, doc, runTransaction, increment } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type Transaction } from '@/lib/types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useToast } from '@/hooks/use-toast';
+import { SaleDetailsDialog } from './sale-details-dialog';
 
 
 export function SalesHistory() {
+  const [selectedSale, setSelectedSale] = useState<Transaction | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isCancelAlertOpen, setIsCancelAlertOpen] = useState(false);
+  const { toast } = useToast();
+
   const salesQuery = useMemo(() => 
     query(collection(db, 'transactions'), where('type', '==', 'Venda'), orderBy('date', 'desc'))
   , []);
   
   const { data: sales, loading } = useCollection<Transaction>(salesQuery);
 
+  const handleOpenDetails = (sale: Transaction) => {
+    setSelectedSale(sale);
+    setIsDetailsOpen(true);
+  }
+
+  const handleOpenCancelAlert = (sale: Transaction) => {
+    setSelectedSale(sale);
+    setIsCancelAlertOpen(true);
+  };
+
+  const handleCancelSale = async () => {
+    if (!selectedSale) return;
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        // 1. Delete the sale transaction
+        const saleRef = doc(db, 'transactions', selectedSale.id);
+        transaction.delete(saleRef);
+
+        // 2. Restore stock for each product in the sale
+        for (const item of selectedSale.items) {
+          const productRef = doc(db, 'products', item.productId);
+          transaction.update(productRef, { stock: increment(item.quantity) });
+        }
+      });
+
+      toast({
+        title: "Venda Cancelada",
+        description: "A venda foi cancelada e o estoque foi restaurado.",
+      });
+      
+    } catch (error) {
+       toast({
+        variant: "destructive",
+        title: "Erro ao cancelar venda",
+        description: "Não foi possível completar a operação.",
+      });
+      console.error(error);
+    } finally {
+      setIsCancelAlertOpen(false);
+      setSelectedSale(null);
+    }
+  };
+
+
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle>Histórico de Vendas</CardTitle>
@@ -87,11 +150,9 @@ export function SalesHistory() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      {sale.items.map((item, index) => (
-                        <span key={index} className="text-sm">
-                          {item.quantity} {item.productName}
-                        </span>
-                      ))}
+                      <span className="text-sm font-medium">
+                        {sale.items.length} {sale.items.length > 1 ? 'itens' : 'item'}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right font-medium">
@@ -106,8 +167,9 @@ export function SalesHistory() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Ver Detalhes</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem onSelect={() => handleOpenDetails(sale)}>Ver Detalhes</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onSelect={() => handleOpenCancelAlert(sale)}>
+                          <Ban className='mr-2 h-4 w-4'/>
                           Cancelar Venda
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -120,5 +182,29 @@ export function SalesHistory() {
         </div>
       </CardContent>
     </Card>
+    
+    <SaleDetailsDialog
+        sale={selectedSale}
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+    />
+
+    <AlertDialog open={isCancelAlertOpen} onOpenChange={setIsCancelAlertOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta ação não pode ser desfeita. A venda será cancelada e o estoque dos produtos será devolvido.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={handleCancelSale} className="bg-destructive hover:bg-destructive/90">
+            Sim, cancelar venda
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

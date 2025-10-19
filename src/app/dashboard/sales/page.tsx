@@ -1,4 +1,5 @@
 
+
 import { PageHeader } from '@/components/page-header';
 import { SalesHistory } from './components/sales-history';
 import { NewSaleDialog } from './components/new-sale-dialog';
