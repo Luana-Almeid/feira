@@ -31,7 +31,7 @@ import { useUser } from '@/hooks/use-user';
 import { Skeleton } from '../ui/skeleton';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/purchases', label: 'Compras', icon: Truck, roles: ['administrador', 'funcionario'] },
