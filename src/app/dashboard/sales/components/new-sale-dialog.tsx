@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -36,7 +36,7 @@ import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection } from '@/hooks/use-collection';
-import { collection, doc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, runTransaction, Timestamp, increment } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type Product } from '@/lib/types';
 
@@ -53,7 +53,8 @@ const saleSchema = z.object({
 export function NewSaleDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { data: products, loading: productsLoading } = useCollection<Product>(collection(db, 'products'));
+  const productsQuery = useMemo(() => collection(db, 'products'), []);
+  const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
   const { toast } = useToast();
   
   const form = useForm<z.infer<typeof saleSchema>>({
@@ -90,12 +91,11 @@ export function NewSaleDialog() {
                 }
 
                 const productData = productDoc.data() as Product;
-                const newStock = productData.stock - item.quantity;
-                if (newStock < 0) {
+                if (productData.stock < item.quantity) {
                     throw new Error(`Estoque insuficiente para ${productData.name}. Apenas ${productData.stock} disponíveis.`);
                 }
-
-                transaction.update(productRef, { stock: newStock });
+                
+                transaction.update(productRef, { stock: increment(-item.quantity) });
                 itemDetails.push({
                     productId: item.productId,
                     productName: productData.name,
@@ -107,7 +107,7 @@ export function NewSaleDialog() {
             transaction.set(transactionRef, {
                 id: transactionRef.id,
                 type: 'Venda',
-                date: serverTimestamp(),
+                date: Timestamp.now(),
                 items: itemDetails,
                 total,
             });

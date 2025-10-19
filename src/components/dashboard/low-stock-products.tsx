@@ -9,12 +9,15 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useCollection } from '@/hooks/use-collection';
 import { collection, query, where } from 'firebase/firestore';
 import { db } from '@/firebase/client';
+import { useMemo } from 'react';
 
 
 export function LowStockProducts() {
-  const { data: products, loading } = useCollection<Product>(
-    query(collection(db, 'products'), where('stock', '<=', 10)) // Example threshold, adjust as needed
-  );
+  const lowStockQuery = useMemo(() => 
+    query(collection(db, 'products'))
+  , []);
+  
+  const { data: products, loading } = useCollection<Product>(lowStockQuery);
 
   const lowStockProducts = products.filter(p => p.stock <= p.lowStockThreshold);
 

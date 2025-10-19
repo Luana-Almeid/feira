@@ -30,11 +30,14 @@ import { useCollection } from '@/hooks/use-collection';
 import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type Transaction } from '@/lib/types';
+import { useMemo } from 'react';
 
 export function PurchasesHistory() {
-  const { data: purchases, loading } = useCollection<Transaction>(
+  const purchasesQuery = useMemo(() => 
     query(collection(db, 'transactions'), where('type', '==', 'Compra'), orderBy('date', 'desc'))
-  );
+  , []);
+  
+  const { data: purchases, loading } = useCollection<Transaction>(purchasesQuery);
 
   return (
     <Card>

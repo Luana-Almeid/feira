@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -37,7 +37,7 @@ import { NewProductDialog } from '@/app/dashboard/inventory/components/new-produ
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { useCollection } from '@/hooks/use-collection';
-import { collection, doc, runTransaction, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, doc, writeBatch, Timestamp, increment } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type Product } from '@/lib/types';
 
@@ -54,7 +54,8 @@ const purchaseSchema = z.object({
 export function NewPurchaseDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { data: products, loading: productsLoading } = useCollection<Product>(collection(db, 'products'));
+  const productsQuery = useMemo(() => collection(db, 'products'), []);
+  const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof purchaseSchema>>({
@@ -84,7 +85,7 @@ export function NewPurchaseDialog() {
         batch.set(transactionRef, {
             id: transactionRef.id,
             type: 'Compra',
-            date: serverTimestamp(),
+            date: Timestamp.now(),
             items: values.items.map(item => ({
                 productId: item.productId,
                 productName: productMap.get(item.productId)?.name,
@@ -96,12 +97,8 @@ export function NewPurchaseDialog() {
 
         // 2. Update stock for each product
         values.items.forEach(item => {
-            const product = productMap.get(item.productId);
-            if (product) {
-                const productRef = doc(db, 'products', item.productId);
-                const newStock = product.stock + item.quantity;
-                batch.update(productRef, { stock: newStock });
-            }
+            const productRef = doc(db, 'products', item.productId);
+            batch.update(productRef, { stock: increment(item.quantity) });
         });
 
         await batch.commit();

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -37,9 +37,11 @@ const unitLabels: Record<Product['unit'], string> = {
 };
 
 export function InventoryClient() {
-  const { data: products, loading } = useCollection<Product>(
+  const productsQuery = useMemo(() => 
     query(collection(db, 'products'), orderBy('name'))
-  );
+  , []);
+  
+  const { data: products, loading } = useCollection<Product>(productsQuery);
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('Todos');

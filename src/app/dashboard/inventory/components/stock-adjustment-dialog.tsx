@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -49,7 +49,8 @@ const adjustmentSchema = z.object({
 export function StockAdjustmentDialog() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { data: products, loading: productsLoading } = useCollection<Product>(collection(db, 'products'));
+  const productsQuery = useMemo(() => collection(db, 'products'), []);
+  const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
   const { toast } = useToast();
   
   const form = useForm<z.infer<typeof adjustmentSchema>>({

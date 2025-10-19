@@ -25,11 +25,14 @@ import { EmployeeActions } from './employee-actions';
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useMemo } from 'react';
 
 export function EmployeeList() {
-  const { data: employees, loading, error } = useCollection<UserProfile>(
+  const employeesQuery = useMemo(() => 
     query(collection(db, 'users'), orderBy('name'))
-  );
+  , []);
+  
+  const { data: employees, loading } = useCollection<UserProfile>(employeesQuery);
 
   return (
     <Card>
