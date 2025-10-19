@@ -66,9 +66,8 @@ export function AppSidebar() {
             </div>
           ) : filteredMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
+              <Link href={item.href}>
                 <SidebarMenuButton
-                  as="a"
                   tooltip={item.label}
                   className="w-full"
                 >
