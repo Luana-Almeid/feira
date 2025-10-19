@@ -2,7 +2,6 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
@@ -40,7 +39,6 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const pathname = usePathname();
   const { state } = useSidebar();
   const { user, profile, loading } = useUser();
 
@@ -68,10 +66,9 @@ export function AppSidebar() {
             </div>
           ) : filteredMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href}>
+              <Link href={item.href} legacyBehavior passHref>
                 <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
+                  as="a"
                   tooltip={item.label}
                   className="w-full"
                 >
