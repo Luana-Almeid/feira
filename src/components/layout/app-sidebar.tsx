@@ -71,10 +71,8 @@ export function AppSidebar() {
                   tooltip={item.label}
                   className="w-full"
                 >
-                    <p>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </p>
+                  <item.icon />
+                  <span>{item.label}</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
