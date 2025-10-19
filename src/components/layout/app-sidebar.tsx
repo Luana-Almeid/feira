@@ -68,11 +68,11 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {loading && !profile ? (
+          {loading ? (
             <div className="flex flex-col gap-2">
-              <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
-              <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
-              <div className="h-8 w-full bg-gray-200 rounded-md animate-pulse" />
+              <div className="h-8 w-full bg-muted rounded-md animate-pulse" />
+              <div className="h-8 w-full bg-muted rounded-md animate-pulse" />
+              <div className="h-8 w-full bg-muted rounded-md animate-pulse" />
             </div>
           ) : filteredMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
