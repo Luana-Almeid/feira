@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { onSnapshot, Query, DocumentData } from 'firebase/firestore';
 
 interface WithId {
@@ -10,9 +10,6 @@ export function useCollection<T extends DocumentData>(query: Query | null) {
   const [data, setData] = useState<(T & WithId)[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-
-  // Memoize the string representation of the query to use as a stable dependency
-  const queryKey = useMemo(() => query ? JSON.stringify(query) : null, [query]);
 
   useEffect(() => {
     if (!query) {
@@ -43,7 +40,7 @@ export function useCollection<T extends DocumentData>(query: Query | null) {
 
     // Unsubscribe when the component unmounts or the query changes.
     return () => unsubscribe();
-  }, [queryKey]); 
+  }, [query]); 
 
   return { data, loading, error };
 }
