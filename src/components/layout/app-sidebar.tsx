@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -27,9 +28,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
-import { auth } from '@/firebase/client';
-import { signOut } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+import { Skeleton } from '../ui/skeleton';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
@@ -44,13 +43,6 @@ export function AppSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { user, profile, loading } = useUser();
-  const router = useRouter();
-
-
-  const handleSignOut = async () => {
-    await signOut(auth);
-    router.push('/login');
-  }
 
   const filteredMenuItems = menuItems.filter(item => 
     profile?.role && item.roles.includes(profile.role)
@@ -70,9 +62,9 @@ export function AppSidebar() {
         <SidebarMenu>
           {loading ? (
             <div className="flex flex-col gap-2">
-              <div className="h-8 w-full bg-muted rounded-md animate-pulse" />
-              <div className="h-8 w-full bg-muted rounded-md animate-pulse" />
-              <div className="h-8 w-full bg-muted rounded-md animate-pulse" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
             </div>
           ) : filteredMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
