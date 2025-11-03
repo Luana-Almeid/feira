@@ -74,22 +74,10 @@ export function NewSaleDialog() {
   const productMap = useMemo(() => new Map(products.map(p => [p.id, p])), [products]);
   const watchItems = form.watch("items");
   
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
     const value = e.target.value;
-    // Remove any non-digit characters
     const numericValue = value.replace(/[^0-9]/g, '');
-    field.onChange(numericValue);
-  };
-
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
-    const value = e.target.value;
-    // Allow only numbers and one decimal separator (comma or dot)
-    let sanitizedValue = value.replace(/[^0-9,.]/g, '');
-    const parts = sanitizedValue.split(/[.,]/);
-    if (parts.length > 2) {
-      sanitizedValue = `${parts[0]}.${parts.slice(1).join('')}`;
-    }
-    field.onChange(sanitizedValue.replace(',', '.'));
+    field.onChange(numericValue === '' ? '' : Number(numericValue));
   };
 
   async function onSubmit(values: z.infer<typeof saleSchema>) {
@@ -225,7 +213,7 @@ export function NewSaleDialog() {
                               <Input 
                                 placeholder="0" 
                                 {...field}
-                                onChange={(e) => handleQuantityChange(e, field)}
+                                onChange={(e) => handleNumericChange(e, field)}
                               />
                             </FormControl>
                             <FormMessage />
@@ -242,7 +230,7 @@ export function NewSaleDialog() {
                               <Input 
                                 placeholder="R$ 0,00" 
                                 {...field}
-                                onChange={(e) => handlePriceChange(e, field)}
+                                onChange={(e) => handleNumericChange(e, field)}
                               />
                             </FormControl>
                              <FormMessage />
