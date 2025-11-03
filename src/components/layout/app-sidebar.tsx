@@ -66,16 +66,18 @@ export function AppSidebar() {
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
             </div>
           )}
           {!loading && filteredMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
+              <Link href={item.href}>
                   <SidebarMenuButton
                     tooltip={item.label}
                     className="w-full"
                     isActive={pathname === item.href}
-                    as="a"
                   >
                     <item.icon />
                     <span>{item.label}</span>
