@@ -43,7 +43,7 @@ import { cn } from '@/lib/utils';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
-  quantity: z.coerce.number().int("Apenas números inteiros.").min(1, "A quantidade mínima é 1."),
+  quantity: z.coerce.number({invalid_type_error: "Apenas números."}).int("Apenas números inteiros.").min(1, "A quantidade mínima é 1."),
   unitPrice: z.coerce.number()
 });
 
@@ -163,13 +163,13 @@ export function NewSaleDialog() {
                 {fields.map((field, index) => {
                   const selectedProduct = productMap.get(watchItems[index]?.productId);
                   return (
-                    <div key={field.id} className="grid grid-cols-[1fr_100px_120px_auto] gap-2 items-start">
+                    <div key={field.id} className="grid grid-cols-[1fr_100px_120px_auto] gap-2 items-end">
                       <FormField
                         control={form.control}
                         name={`items.${index}.productId`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className={cn(index > 0 && 'sr-only')}>Produto</FormLabel>
+                            <FormLabel>Produto</FormLabel>
                             <Select
                               onValueChange={(value) => {
                                 field.onChange(value);
@@ -199,7 +199,7 @@ export function NewSaleDialog() {
                         name={`items.${index}.quantity`}
                         render={({ field }) => (
                           <FormItem>
-                             <FormLabel className={cn(index > 0 && 'sr-only')}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
+                             <FormLabel>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
                             <FormControl>
                               <Input type="number" placeholder="0" {...field} />
                             </FormControl>
@@ -212,27 +212,24 @@ export function NewSaleDialog() {
                         name={`items.${index}.unitPrice`}
                         render={({ field }) => (
                           <FormItem>
-                             <FormLabel className={cn(index > 0 && 'sr-only')}>Preço Unit. (R$)</FormLabel>
+                             <FormLabel>Preço Unit. (R$)</FormLabel>
                             <FormControl>
                               <Input type="number" step="0.01" placeholder="R$ 0,00" {...field} />
                             </FormControl>
-                            <FormMessage />
+                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <FormItem>
-                        <FormLabel className={cn(index > 0 && 'sr-only', 'opacity-0')}>Ação</FormLabel>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => remove(index)}
-                          disabled={fields.length <= 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remover item</span>
-                        </Button>
-                      </FormItem>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => remove(index)}
+                        disabled={fields.length <= 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Remover item</span>
+                      </Button>
                     </div>
                   )
                 })}
