@@ -163,85 +163,88 @@ export function NewSaleDialog() {
                 {fields.map((field, index) => {
                   const selectedProduct = productMap.get(watchItems[index]?.productId);
                   return (
-                    <div key={field.id} className="flex flex-col sm:flex-row sm:items-start sm:gap-4 w-full">
-                      <div className="flex-1 min-w-0">
-                         <FormField
-                          control={form.control}
-                          name={`items.${index}.productId`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className={cn(index > 0 && 'sr-only')}>Produto</FormLabel>
-                              <Select
-                                onValueChange={(value) => {
-                                  field.onChange(value);
-                                  handleProductChange(value, index);
-                                }}
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {products.map((product) => (
-                                    <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
-                                      {product.name} {product.stock <= 0 && '(Sem estoque)'}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div className="w-full sm:w-24">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.quantity`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className={cn(index > 0 && 'sr-only')}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
-                              <FormControl>
-                                <Input type="number" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                    <div key={field.id} className="grid grid-cols-[1fr_auto_auto_auto] gap-x-2 gap-y-1 items-start">
+                        {/* Labels */}
+                        <FormLabel className={cn(index > 0 && 'sr-only', 'col-span-4')}>Produto</FormLabel>
+                        <FormLabel className={cn(index > 0 && 'sr-only', 'col-span-4')}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
+                        <FormLabel className={cn(index > 0 && 'sr-only', 'col-span-4')}>Preço Unit. (R$)</FormLabel>
+                        <span className={cn(index > 0 && 'sr-only', 'col-span-4 sr-only')}>Ação</span>
+                        
+                        {/* Inputs */}
+                        <div className="col-start-1">
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.productId`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <Select
+                                  onValueChange={(value) => {
+                                    field.onChange(value);
+                                    handleProductChange(value, index);
+                                  }}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {products.map((product) => (
+                                      <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
+                                        {product.name} {product.stock <= 0 && '(Sem estoque)'}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
 
-                      <div className="w-full sm:w-32">
-                         <FormField
-                          control={form.control}
-                          name={`items.${index}.unitPrice`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className={cn(index > 0 && 'sr-only')}>Preço Unit. (R$)</FormLabel>
-                              <FormControl>
-                                <Input type="number" step="0.01" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                        <div className="col-start-2">
+                           <FormField
+                              control={form.control}
+                              name={`items.${index}.quantity`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input type="number" placeholder="0" className="w-24" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        </div>
 
-                      <div className="self-end pb-2">
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => remove(index)}
-                          className={cn(index === 0 && 'mt-8 sm:mt-0')}
-                          disabled={fields.length <= 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remover item</span>
-                        </Button>
-                      </div>
+                        <div className="col-start-3">
+                            <FormField
+                              control={form.control}
+                              name={`items.${index}.unitPrice`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormControl>
+                                    <Input type="number" step="0.01" placeholder="R$ 0,00" className="w-28" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                        </div>
+
+                        <div className="col-start-4">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => remove(index)}
+                              disabled={fields.length <= 1}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">Remover item</span>
+                            </Button>
+                        </div>
                     </div>
                   )
                 })}
