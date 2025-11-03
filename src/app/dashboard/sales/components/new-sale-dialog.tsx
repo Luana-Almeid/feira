@@ -63,7 +63,7 @@ export function NewSaleDialog() {
   const form = useForm<z.infer<typeof saleSchema>>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
-      items: [{ productId: '', quantity: 1, unitPrice: 0 }],
+      items: [{ productId: '', quantity: '' as any, unitPrice: '' as any }],
     },
   });
 
@@ -149,7 +149,7 @@ export function NewSaleDialog() {
 
         toast({ title: "Venda registrada!", description: `Venda de R$ ${total.toFixed(2).replace('.', ',')} foi finalizada.`});
         setOpen(false);
-        form.reset({ items: [{ productId: '', quantity: 1, unitPrice: 0 }] });
+        form.reset({ items: [{ productId: '', quantity: '' as any, unitPrice: '' as any }] });
     } catch(error) {
         if (error instanceof Error) {
             toast({ variant: 'destructive', title: 'Erro ao registrar venda', description: error.message });
@@ -304,3 +304,5 @@ export function NewSaleDialog() {
     </Dialog>
   );
 }
+
+    
