@@ -35,7 +35,7 @@ import { auth } from '@/firebase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const menuItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/purchases', label: 'Compras', icon: Truck, roles: ['administrador', 'funcionario'] },
@@ -51,18 +51,24 @@ export function AppSidebar() {
   const { toast } = useToast();
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      toast({ title: "Você saiu!", description: "Até a próxima!" });
-      router.push('/login');
-    } catch (error) {
-      toast({ variant: 'destructive', title: "Erro ao sair", description: "Não foi possível encerrar a sessão." });
-    }
+    // This is a placeholder as we are using a mock user.
+    // In a real scenario, you would call signOut.
+    toast({ title: "Você saiu!", description: "Até a próxima!" });
+    // Since there's no real login, we can't redirect to a login page.
+    // We'll just stay on the current page or redirect to a safe default.
+    router.push('/dashboard/inventory'); 
   }
 
   const filteredMenuItems = menuItems.filter(item => 
     profile?.role && item.roles.includes(profile.role)
   );
+
+  const isMenuItemActive = (href: string) => {
+    if (href === '/dashboard') {
+      return pathname === href;
+    }
+    return pathname.startsWith(href);
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -92,7 +98,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     tooltip={item.label}
                     className="w-full"
-                    isActive={pathname === item.href}
+                    isActive={isMenuItemActive(item.href)}
                   >
                     <item.icon />
                     <span>{item.label}</span>

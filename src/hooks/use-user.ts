@@ -12,40 +12,31 @@ import { type UserProfile } from '@/lib/types';
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-        setUser(user);
-        if (!user) {
-            setProfile(null);
-            setLoading(false);
-        }
-    });
+    // Mock user for development without login
+    const mockUser = {
+      uid: 'mock-user-id',
+      email: 'admin@excelenciafrutas.com',
+      displayName: 'Admin',
+    } as User;
 
-    return () => unsubscribeAuth();
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-        const profileRef = doc(db, 'users', user.uid);
-        const unsubscribeProfile = onSnapshot(profileRef, (doc) => {
-            if (doc.exists()) {
-                setProfile({ uid: doc.id, ...doc.data()} as UserProfile);
-            } else {
-                setProfile(null);
-            }
-            setLoading(false);
-        }, (error) => {
-            console.error("Error fetching user profile:", error);
-            setProfile(null);
-            setLoading(false);
-        });
-
-        return () => unsubscribeProfile();
+    const mockProfile: UserProfile = {
+        uid: 'mock-user-id',
+        name: 'Admin',
+        email: 'admin@excelenciafrutas.com',
+        cpf: '000.000.000-00',
+        role: 'administrador',
+        status: 'ativo',
+        admissionDate: new Date().toISOString(),
     }
-  }, [user]);
+    
+    setUser(mockUser);
+    setProfile(mockProfile);
+    setLoading(false);
 
+  }, []);
 
   return { user, profile, loading };
 }

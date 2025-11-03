@@ -6,6 +6,8 @@ import './globals.css';
 import { Inter as FontSans } from "next/font/google"
 import { cn } from '@/lib/utils';
 import { AuthProvider } from '@/contexts/auth-provider';
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -32,7 +34,11 @@ export default function RootLayout({
         )}
       >
         <FirebaseProvider>
-          {children}
+          <AuthProvider>
+            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}>
+                {children}
+            </Suspense>
+          </AuthProvider>
         </FirebaseProvider>
         <Toaster />
       </body>

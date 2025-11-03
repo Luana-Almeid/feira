@@ -19,7 +19,6 @@ type SalesChartProps = {
 
 export function SalesChart({ sales }: SalesChartProps) {
   const chartData = useMemo(() => {
-    const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     
     // Initialize sales data for the last 7 days
     const salesByDay = Array.from({ length: 7 }).map((_, i) => {

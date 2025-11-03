@@ -1,0 +1,224 @@
+'use client';
+
+import { useMemo } from 'react';
+import { useCollection } from '@/hooks/use-collection';
+import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { db } from '@/firebase/client';
+import { type Transaction, type Product, type UserProfile } from '@/lib/types';
+import { Loader2, DollarSign, Users, Package, TrendingUp, TrendingDown, Wrench, Ban, AlertTriangle, BarChart, ArrowUp, ArrowDown } from 'lucide-react';
+import { startOfMonth, startOfDay } from 'date-fns';
+import { StatCard } from './stat-card';
+import { SalesChart } from './sales-chart';
+import { LowStockProducts } from './low-stock-products';
+import { HighlightCard } from './highlight-card';
+
+export function DashboardClient() {
+  const lastMonth = useMemo(() => startOfMonth(new Date()), []);
+  const todayStart = useMemo(() => startOfDay(new Date()), []);
+  
+  const transactionsQuery = useMemo(() => 
+    query(collection(db, 'transactions'), where('date', '>=', lastMonth), orderBy('date', 'desc'))
+  , [lastMonth]);
+  
+  const productsQuery = useMemo(() => query(collection(db, 'products')), []);
+  const usersQuery = useMemo(() => query(collection(db, 'users')), []);
+
+  const { data: transactions, loading: transactionsLoading } = useCollection<Transaction>(transactionsQuery);
+  const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
+  const { data: users, loading: usersLoading } = useCollection<UserProfile>(usersQuery);
+
+  const loading = transactionsLoading || productsLoading || usersLoading;
+
+  const {
+    salesToday,
+    transactionsToday,
+    activeEmployees,
+    inactiveEmployees,
+    totalProducts,
+    productOfTheDay,
+    productOfTheMonth,
+    leastSoldProductMonth,
+    mostAdjustedProduct,
+  } = useMemo(() => {
+    // Filter transactions for different periods
+    const todaySales = transactions.filter(t => t.type === 'Venda' && (t.date as Timestamp).toDate() >= todayStart);
+    const monthSales = transactions.filter(t => t.type === 'Venda');
+    const monthAdjustments = transactions.filter(t => t.type === 'Descarte');
+
+    // Sales stats
+    const salesToday = todaySales.reduce((acc, sale) => acc + sale.total, 0);
+    const transactionsToday = todaySales.length;
+
+    // Employee stats
+    const activeEmployees = users.filter(u => u.status === 'ativo').length;
+    const inactiveEmployees = users.filter(u => u.status === 'inativo').length;
+
+    // Product stats
+    const totalProducts = products.length;
+
+    // Most sold product logic
+    const getMostSold = (sales: Transaction[]) => {
+      if (sales.length === 0) return { name: 'N/A', quantity: 0, unit: 'vendas' };
+      const productCount: Record<string, { name: string; quantity: number, unit: string }> = {};
+      
+      sales.forEach(sale => {
+        sale.items.forEach(item => {
+          const product = products.find(p => p.id === item.productId);
+          if (product) {
+              if (!productCount[item.productId]) {
+                productCount[item.productId] = { name: item.productName, quantity: 0, unit: product.unit };
+              }
+              productCount[item.productId].quantity += item.quantity;
+          }
+        });
+      });
+      
+      return Object.values(productCount).reduce((prev, current) => (prev.quantity > current.quantity) ? prev : current, { name: 'N/A', quantity: 0, unit: 'vendas' });
+    };
+
+    // Least sold product logic
+    const getLeastSoldMonth = (sales: Transaction[], allProducts: Product[]) => {
+        if (allProducts.length === 0) return { name: 'N/A', quantity: 0, unit: 'vendas' };
+        const productCount: Record<string, number> = {};
+
+        allProducts.forEach(p => productCount[p.id] = 0);
+
+        sales.forEach(sale => {
+            sale.items.forEach(item => {
+                if (productCount.hasOwnProperty(item.productId)) {
+                    productCount[item.productId] += item.quantity;
+                }
+            });
+        });
+
+        let leastSoldId = allProducts[0].id;
+        for (const productId in productCount) {
+            if (productCount[productId] < productCount[leastSoldId]) {
+                leastSoldId = productId;
+            }
+        }
+        
+        const product = allProducts.find(p => p.id === leastSoldId);
+        return {
+            name: product?.name || 'N/A',
+            quantity: productCount[leastSoldId],
+            unit: product?.unit || 'vendas'
+        };
+    };
+
+    const getMostAdjusted = (adjustments: Transaction[], allProducts: Product[]) => {
+        if (adjustments.length === 0) return { name: 'N/A', quantity: 0, unit: 'ajustes' };
+        const adjustmentCount: Record<string, number> = {};
+
+        adjustments.forEach(adj => {
+            adj.items.forEach(item => {
+                if (!adjustmentCount[item.productId]) {
+                    adjustmentCount[item.productId] = 0;
+                }
+                adjustmentCount[item.productId]++;
+            });
+        });
+
+        if (Object.keys(adjustmentCount).length === 0) return { name: 'N/A', quantity: 0, unit: 'ajustes' };
+
+        const mostAdjustedId = Object.keys(adjustmentCount).reduce((a, b) => adjustmentCount[a] > adjustmentCount[b] ? a : b);
+        const product = allProducts.find(p => p.id === mostAdjustedId);
+
+        return {
+            name: product?.name || 'N/A',
+            quantity: adjustmentCount[mostAdjustedId],
+            unit: 'ajustes'
+        };
+    };
+
+    return {
+      salesToday,
+      transactionsToday,
+      activeEmployees,
+      inactiveEmployees,
+      totalProducts,
+      productOfTheDay: getMostSold(todaySales),
+      productOfTheMonth: getMostSold(monthSales),
+      leastSoldProductMonth: getLeastSoldMonth(monthSales, products),
+      mostAdjustedProduct: getMostAdjusted(monthAdjustments, products),
+    };
+  }, [transactions, products, users, todayStart]);
+
+
+  if (loading) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4 md:gap-8">
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          title="Vendas (Hoje)"
+          value={`R$ ${salesToday.toFixed(2).replace('.', ',')}`}
+          icon={DollarSign}
+          description={`${transactionsToday} transações hoje`}
+        />
+        <StatCard
+          title="Funcionários Ativos"
+          value={activeEmployees}
+          icon={Users}
+          description={`${inactiveEmployees} funcionários inativos`}
+        />
+        <StatCard
+          title="Produtos em Estoque"
+          value={totalProducts}
+          icon={Package}
+          description="Itens diferentes cadastrados"
+        />
+        <StatCard
+            title="Funcionários Inativos"
+            value={inactiveEmployees}
+            icon={Ban}
+            description="Total de funcionários demitidos"
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+         <HighlightCard
+            title="Produto do Dia"
+            icon={TrendingUp}
+            productName={productOfTheDay.name}
+            quantity={productOfTheDay.quantity}
+            unit={productOfTheDay.unit}
+        />
+        <HighlightCard
+            title="Produto do Mês"
+            icon={BarChart}
+            productName={productOfTheMonth.name}
+            quantity={productOfTheMonth.quantity}
+            unit={productOfTheMonth.unit}
+        />
+        <HighlightCard
+            title="Menos Vendido (Mês)"
+            icon={TrendingDown}
+            productName={leastSoldProductMonth.name}
+            quantity={leastSoldProductMonth.quantity}
+            unit={leastSoldProductMonth.unit}
+        />
+         <HighlightCard
+            title="Mais Ajustes Manuais"
+            icon={Wrench}
+            productName={mostAdjustedProduct.name}
+            quantity={mostAdjustedProduct.quantity}
+            unit={mostAdjustedProduct.unit}
+        />
+      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
+        <div className="lg:col-span-4">
+            <SalesChart sales={transactions.filter(t => t.type === 'Venda')} />
+        </div>
+        <div className="lg:col-span-3">
+            <LowStockProducts products={products} loading={productsLoading}/>
+        </div>
+      </div>
+    </div>
+  );
+}
