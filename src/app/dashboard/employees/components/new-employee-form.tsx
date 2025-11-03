@@ -29,6 +29,7 @@ import { auth, db } from '@/firebase/client';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
+import { DatePicker } from '@/components/ui/datepicker';
 
 const employeeSchema = z.object({
   name: z.string().min(1, 'O nome é obrigatório.'),
@@ -37,6 +38,9 @@ const employeeSchema = z.object({
   password: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres.'),
   role: z.enum(['administrador', 'funcionario'], {
     required_error: 'O perfil é obrigatório.',
+  }),
+  admissionDate: z.date({
+    required_error: 'A data de admissão é obrigatória.',
   }),
 });
 
@@ -53,6 +57,7 @@ export function NewEmployeeForm() {
       email: '',
       password: '',
       role: 'funcionario',
+      admissionDate: new Date(),
     },
   });
 
@@ -93,6 +98,7 @@ export function NewEmployeeForm() {
         email: values.email,
         role: values.role,
         status: 'ativo',
+        admissionDate: values.admissionDate.toISOString(),
         dismissalDate: null,
       });
 
@@ -169,6 +175,23 @@ export function NewEmployeeForm() {
                 )}
               />
         </div>
+        <FormField
+          control={form.control}
+          name="admissionDate"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Data de Admissão</FormLabel>
+              <FormControl>
+                 <DatePicker 
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Selecione a data de admissão"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="email"

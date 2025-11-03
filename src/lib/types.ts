@@ -35,5 +35,6 @@ export type UserProfile = {
   cpf: string;
   role: 'administrador' | 'funcionario';
   status: 'ativo' | 'inativo';
+  admissionDate: string | Date | Timestamp;
   dismissalDate?: string | null;
 }

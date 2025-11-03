@@ -33,13 +33,18 @@
             "enum": ["ativo", "inativo"],
             "description": "The user's employment status."
         },
+        "admissionDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date the employee was admitted."
+        },
         "dismissalDate": {
             "type": "string",
             "format": "date-time",
             "description": "The date the employee was dismissed."
         }
       },
-      "required": ["uid", "name", "email", "cpf", "role", "status"]
+      "required": ["uid", "name", "email", "cpf", "role", "status", "admissionDate"]
     },
     "Product": {
       "title": "Product",

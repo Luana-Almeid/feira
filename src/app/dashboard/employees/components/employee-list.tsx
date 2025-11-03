@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useCollection } from '@/hooks/use-collection';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type UserProfile } from '@/lib/types';
 import { EmployeeActions } from './employee-actions';
@@ -33,6 +33,14 @@ export function EmployeeList() {
   , []);
   
   const { data: employees, loading } = useCollection<UserProfile>(employeesQuery);
+
+  const formatDate = (date: string | Date | Timestamp | null | undefined) => {
+    if (!date) return 'N/A';
+    if (date instanceof Timestamp) {
+      return format(date.toDate(), 'dd/MM/yyyy', { locale: ptBR });
+    }
+    return format(new Date(date), 'dd/MM/yyyy', { locale: ptBR });
+  }
 
   return (
     <Card>
@@ -51,6 +59,7 @@ export function EmployeeList() {
                 <TableHead>CPF</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Perfil</TableHead>
+                <TableHead>Data de Admissão</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Data de Demissão</TableHead>
                 <TableHead className="w-[60px] text-right">Ações</TableHead>
@@ -59,14 +68,14 @@ export function EmployeeList() {
             <TableBody>
               {loading && (
                 <TableRow>
-                    <TableCell colSpan={7} className="text-center h-24">
+                    <TableCell colSpan={8} className="text-center h-24">
                         <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary"/>
                     </TableCell>
                 </TableRow>
               )}
               {!loading && employees.length === 0 && (
                 <TableRow>
-                    <TableCell colSpan={7} className="text-center h-24 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center h-24 text-muted-foreground">
                         Nenhum funcionário cadastrado.
                     </TableCell>
                 </TableRow>
@@ -82,12 +91,15 @@ export function EmployeeList() {
                     </Badge>
                   </TableCell>
                   <TableCell>
+                    {formatDate(employee.admissionDate)}
+                  </TableCell>
+                  <TableCell>
                     <Badge variant={employee.status === 'ativo' ? 'secondary' : 'destructive'}>
                       {employee.status}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {employee.dismissalDate ? format(new Date(employee.dismissalDate), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'}
+                    {formatDate(employee.dismissalDate)}
                   </TableCell>
                   <TableCell className="text-right">
                     <EmployeeActions employee={employee} />
