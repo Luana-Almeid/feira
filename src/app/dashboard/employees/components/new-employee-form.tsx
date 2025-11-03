@@ -122,20 +122,20 @@ export function NewEmployeeForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome Completo</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Nome Completo</FormLabel>
+                <FormControl>
+                    <Input {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
             <FormField
             control={form.control}
             name="cpf"
@@ -153,6 +153,25 @@ export function NewEmployeeForm() {
                 </FormItem>
             )}
             />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+                control={form.control}
+                name="admissionDate"
+                render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                    <FormLabel>Data de Admissão</FormLabel>
+                    <FormControl>
+                        <DatePicker 
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Selecione a data de admissão"
+                        />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
             <FormField
                 control={form.control}
                 name="role"
@@ -175,25 +194,7 @@ export function NewEmployeeForm() {
                 )}
               />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <FormField
-                control={form.control}
-                name="admissionDate"
-                render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                    <FormLabel>Data de Admissão</FormLabel>
-                    <FormControl>
-                        <DatePicker 
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Selecione a data de admissão"
-                        />
-                    </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-        </div>
+        
         <FormField
           control={form.control}
           name="email"
