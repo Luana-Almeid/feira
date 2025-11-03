@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { StatCard } from '@/components/dashboard/stat-card';
-import { DollarSign, ShoppingCart, Package, AlertCircle, Users, Trophy, Sparkles, Calendar, TrendingDown, Wrench, UserX } from 'lucide-react';
+import { DollarSign, ShoppingCart, Package, Users, Trophy, Sparkles, Calendar, TrendingDown, Wrench, UserX } from 'lucide-react';
 import { SalesChart } from '@/components/dashboard/sales-chart';
 import { LowStockProducts } from '@/components/dashboard/low-stock-products';
 import { useCollection } from '@/hooks/use-collection';
@@ -150,7 +150,6 @@ export function DashboardClient() {
   const lowStockCount = useMemo(() => products.filter(p => p.stock <= p.lowStockThreshold).length, [products]);
 
   const mostSoldToday = useMemo(() => getMostSoldProduct(recentSales, 'day'), [recentSales]);
-  const mostSoldThisWeek = useMemo(() => getMostSoldProduct(recentSales, 'week'), [recentSales]);
   const mostSoldThisMonth = useMemo(() => getMostSoldProduct(recentSales, 'month'), [recentSales]);
   const leastSoldThisMonth = useMemo(() => getLeastSoldProduct(recentSales, products, 'month'), [recentSales, products]);
   const mostAdjustedProduct = useMemo(() => getMostAdjustedProduct(recentAdjustments), [recentAdjustments]);
@@ -198,19 +197,12 @@ export function DashboardClient() {
           description={`Do total de ${users.length} funcionários`}
         />
       </div>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-4">
         <HighlightCard 
           title="Produto do Dia"
           icon={Sparkles}
           productName={mostSoldToday.name}
           quantity={mostSoldToday.quantity}
-          unit='unidades vendidas'
-        />
-        <HighlightCard 
-          title="Produto da Semana"
-          icon={Trophy}
-          productName={mostSoldThisWeek.name}
-          quantity={mostSoldThisWeek.quantity}
           unit='unidades vendidas'
         />
         <HighlightCard 
