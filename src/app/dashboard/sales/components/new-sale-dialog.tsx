@@ -39,10 +39,11 @@ import { useCollection } from '@/hooks/use-collection';
 import { collection, doc, runTransaction, Timestamp, increment } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type Product } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
-  quantity: z.coerce.number().min(1, "A quantidade mínima é 1."),
+  quantity: z.coerce.number().int("Apenas números inteiros.").min(1, "A quantidade mínima é 1."),
   unitPrice: z.coerce.number()
 });
 
@@ -69,7 +70,7 @@ export function NewSaleDialog() {
     name: "items",
   });
 
-  const productMap = new Map(products.map(p => [p.id, p]));
+  const productMap = useMemo(() => new Map(products.map(p => [p.id, p])), [products]);
   const watchItems = form.watch("items");
 
 
@@ -152,7 +153,7 @@ export function NewSaleDialog() {
         <DialogHeader>
           <DialogTitle>Registrar Nova Venda</DialogTitle>
           <DialogDescription>
-            Adicione os produtos e as quantidades para registrar a venda.
+            Adicione os produtos e as quantidades para registrar a venda. O estoque será atualizado automaticamente.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -162,67 +163,80 @@ export function NewSaleDialog() {
                 {fields.map((field, index) => {
                   const selectedProduct = productMap.get(watchItems[index]?.productId);
                   return (
-                    <div key={field.id} className="grid grid-cols-12 gap-2 sm:gap-4 items-end">
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.productId`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-12 sm:col-span-6">
-                            <FormLabel className={index > 0 ? 'sr-only' : ''}>Produto</FormLabel>
-                            <Select
-                              onValueChange={(value) => {
-                                field.onChange(value);
-                                handleProductChange(value, index);
-                              }}
-                              value={field.value}
-                            >
+                    <div key={field.id} className="grid grid-cols-1 sm:grid-cols-12 gap-x-2 sm:gap-x-4 items-start">
+                      <div className="col-span-12 sm:col-span-6">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.productId`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className={cn(index > 0 && 'sr-only')}>Produto</FormLabel>
+                              <Select
+                                onValueChange={(value) => {
+                                  field.onChange(value);
+                                  handleProductChange(value, index);
+                                }}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {products.map((product) => (
+                                    <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
+                                      {product.name} {product.stock <= 0 && '(Sem estoque)'}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="col-span-4 sm:col-span-2">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.quantity`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className={cn(index > 0 && 'sr-only')}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
-                                </SelectTrigger>
+                                <Input type="number" {...field} />
                               </FormControl>
-                              <SelectContent>
-                                {products.map((product) => (
-                                  <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
-                                    {product.name} {product.stock <= 0 && '(Sem estoque)'}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.quantity`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-4 sm:col-span-2">
-                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.unitPrice`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-6 sm:col-span-3">
-                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Preço Unit. (R$)</FormLabel>
-                            <FormControl>
-                              <Input type="number" step="0.01" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="col-span-2 sm:col-span-1">
-                        <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Remover item</span>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      <div className="col-span-5 sm:col-span-3">
+                         <FormField
+                          control={form.control}
+                          name={`items.${index}.unitPrice`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className={cn(index > 0 && 'sr-only')}>Preço Unit. (R$)</FormLabel>
+                              <FormControl>
+                                <Input type="number" step="0.01" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                       <div className="col-span-2 sm:col-span-1 flex items-end h-full">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => remove(index)}
+                          className={cn(index === 0 && 'mt-8 sm:mt-0')}
+                          disabled={fields.length <= 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remover item</span>
                         </Button>
                       </div>
                     </div>
