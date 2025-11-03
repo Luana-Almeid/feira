@@ -277,7 +277,7 @@ export function NewSaleDialog() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => append({ productId: '', quantity: 1, unitPrice: 0 })}
+              onClick={() => append({ productId: '', quantity: '' as any, unitPrice: '' as any })}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               Adicionar Outro Item
@@ -304,5 +304,3 @@ export function NewSaleDialog() {
     </Dialog>
   );
 }
-
-    
