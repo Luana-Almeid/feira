@@ -163,9 +163,9 @@ export function NewSaleDialog() {
                 {fields.map((field, index) => {
                   const selectedProduct = productMap.get(watchItems[index]?.productId);
                   return (
-                    <div key={field.id} className="grid grid-cols-1 sm:grid-cols-12 gap-x-2 sm:gap-x-4 items-start">
-                      <div className="col-span-12 sm:col-span-6">
-                        <FormField
+                    <div key={field.id} className="flex flex-col sm:flex-row sm:items-start sm:gap-4 w-full">
+                      <div className="flex-1 min-w-0">
+                         <FormField
                           control={form.control}
                           name={`items.${index}.productId`}
                           render={({ field }) => (
@@ -196,7 +196,8 @@ export function NewSaleDialog() {
                           )}
                         />
                       </div>
-                      <div className="col-span-4 sm:col-span-2">
+                      
+                      <div className="w-full sm:w-24">
                         <FormField
                           control={form.control}
                           name={`items.${index}.quantity`}
@@ -211,7 +212,8 @@ export function NewSaleDialog() {
                           )}
                         />
                       </div>
-                      <div className="col-span-5 sm:col-span-3">
+
+                      <div className="w-full sm:w-32">
                          <FormField
                           control={form.control}
                           name={`items.${index}.unitPrice`}
@@ -226,7 +228,8 @@ export function NewSaleDialog() {
                           )}
                         />
                       </div>
-                       <div className="col-span-2 sm:col-span-1 flex items-end h-full">
+
+                      <div className="self-end pb-2">
                         <Button
                           type="button"
                           variant="destructive"
