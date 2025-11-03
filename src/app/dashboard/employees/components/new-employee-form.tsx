@@ -32,7 +32,7 @@ import Link from 'next/link';
 
 const employeeSchema = z.object({
   name: z.string().min(1, 'O nome é obrigatório.'),
-  cpf: z.string().length(11, 'O CPF deve ter 11 dígitos.'),
+  cpf: z.string().min(14, 'O CPF deve ter 11 dígitos.'),
   email: z.string().email('E-mail inválido.'),
   password: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres.'),
   role: z.enum(['administrador', 'funcionario'], {
@@ -56,6 +56,24 @@ export function NewEmployeeForm() {
     },
   });
 
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const rawValue = e.target.value.replace(/\D/g, '');
+    if (rawValue.length > 11) {
+        return;
+    }
+
+    let formattedValue = rawValue;
+    if (rawValue.length > 9) {
+        formattedValue = `${rawValue.slice(0, 3)}.${rawValue.slice(3, 6)}.${rawValue.slice(6, 9)}-${rawValue.slice(9)}`;
+    } else if (rawValue.length > 6) {
+        formattedValue = `${rawValue.slice(0, 3)}.${rawValue.slice(3, 6)}.${rawValue.slice(6)}`;
+    } else if (rawValue.length > 3) {
+        formattedValue = `${rawValue.slice(0, 3)}.${rawValue.slice(3)}`;
+    }
+    
+    field.onChange(formattedValue);
+  };
+
   async function onSubmit(values: z.infer<typeof employeeSchema>) {
     setLoading(true);
     try {
@@ -71,7 +89,7 @@ export function NewEmployeeForm() {
       await setDoc(doc(db, 'users', user.uid), {
         uid: user.uid,
         name: values.name,
-        cpf: values.cpf,
+        cpf: values.cpf.replace(/\D/g, ''), // Store only numbers
         email: values.email,
         role: values.role,
         status: 'ativo',
@@ -119,7 +137,11 @@ export function NewEmployeeForm() {
                 <FormItem>
                 <FormLabel>CPF</FormLabel>
                 <FormControl>
-                    <Input placeholder='Somente números' {...field} />
+                    <Input 
+                        placeholder='000.000.000-00'
+                        {...field}
+                        onChange={(e) => handleCpfChange(e, field)}
+                    />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
