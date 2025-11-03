@@ -26,8 +26,9 @@ import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
+import Link from 'next/link';
 
 const employeeSchema = z.object({
   name: z.string().min(1, 'O nome é obrigatório.'),
@@ -174,7 +175,13 @@ export function NewEmployeeForm() {
           )}
         />
         
-        <div className='flex justify-end'>
+        <div className='flex justify-between items-center'>
+            <Link href="/dashboard/employees" passHref>
+                <Button variant="outline" type="button">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Voltar
+                </Button>
+            </Link>
             <Button type="submit" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Salvar Funcionário
