@@ -2,6 +2,9 @@
 import { PageHeader } from '@/components/page-header';
 import { NewEmployeeForm } from '../components/new-employee-form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 export default function NewEmployeePage() {
   return (
@@ -9,7 +12,14 @@ export default function NewEmployeePage() {
       <PageHeader
         title="Cadastrar Novo Funcionário"
         description="Preencha os dados para criar um novo acesso."
-      />
+      >
+        <Link href="/dashboard/employees" passHref>
+            <Button variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Voltar
+            </Button>
+        </Link>
+      </PageHeader>
       <div className="flex justify-center">
         <Card className="w-full max-w-2xl">
           <CardHeader>
