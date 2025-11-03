@@ -159,7 +159,7 @@ export function NewEmployeeForm() {
                 control={form.control}
                 name="admissionDate"
                 render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                     <FormLabel>Data de Admissão</FormLabel>
                     <FormControl>
                         <DatePicker 
