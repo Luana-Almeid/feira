@@ -40,6 +40,7 @@ import { collection, doc, runTransaction, Timestamp, increment } from 'firebase/
 import { db } from '@/firebase/client';
 import { type Product } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import type React from 'react';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
@@ -72,6 +73,27 @@ export function NewSaleDialog() {
 
   const productMap = useMemo(() => new Map(products.map(p => [p.id, p])), [products]);
   const watchItems = form.watch("items");
+
+  const handleNumericInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow: backspace, delete, tab, escape, enter, dot, comma
+    if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', '.', ','].includes(e.key) ||
+        // Allow: Ctrl+A, Command+A
+        (e.key === 'a' && (e.ctrlKey || e.metaKey)) ||
+        // Allow: Ctrl+C, Command+C
+        (e.key === 'c' && (e.ctrlKey || e.metaKey)) ||
+        // Allow: Ctrl+V, Command+V
+        (e.key === 'v' && (e.ctrlKey || e.metaKey)) ||
+        // Allow: Ctrl+X, Command+X
+        (e.key === 'x' && (e.ctrlKey || e.metaKey)) ||
+        // Allow: home, end, left, right, down, up
+        (e.key.startsWith('Arrow'))) {
+          return;
+    }
+    // Ensure that it is a number and stop the keypress
+    if (isNaN(Number(e.key)) && e.key !== '.' && e.key !== ',') {
+        e.preventDefault();
+    }
+  };
 
 
   async function onSubmit(values: z.infer<typeof saleSchema>) {
@@ -169,7 +191,7 @@ export function NewSaleDialog() {
                         name={`items.${index}.productId`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Produto</FormLabel>
+                            <FormLabel className={index > 0 ? 'sr-only' : ''}>Produto</FormLabel>
                             <Select
                               onValueChange={(value) => {
                                 field.onChange(value);
@@ -199,9 +221,9 @@ export function NewSaleDialog() {
                         name={`items.${index}.quantity`}
                         render={({ field }) => (
                           <FormItem>
-                             <FormLabel>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
+                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder="0" {...field} />
+                              <Input type="number" placeholder="0" {...field} onKeyDown={handleNumericInput}/>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -212,9 +234,9 @@ export function NewSaleDialog() {
                         name={`items.${index}.unitPrice`}
                         render={({ field }) => (
                           <FormItem>
-                             <FormLabel>Preço Unit. (R$)</FormLabel>
+                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Preço Unit. (R$)</FormLabel>
                             <FormControl>
-                              <Input type="number" step="0.01" placeholder="R$ 0,00" {...field} />
+                              <Input type="number" step="0.01" placeholder="R$ 0,00" {...field} onKeyDown={handleNumericInput}/>
                             </FormControl>
                              <FormMessage />
                           </FormItem>
@@ -266,3 +288,5 @@ export function NewSaleDialog() {
     </Dialog>
   );
 }
+
+    
