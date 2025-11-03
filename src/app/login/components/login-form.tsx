@@ -43,7 +43,7 @@ export function LoginForm() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
-      router.push('/');
+      router.push('/dashboard/inventory');
     } catch (error: any) {
         let errorMessage = "Ocorreu um erro ao fazer login. Verifique suas credenciais."
         if (error.code === 'auth/invalid-credential') {

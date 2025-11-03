@@ -16,9 +16,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!loading && !user && pathname !== '/login') {
       router.push('/login');
     }
-    // If finished loading and there IS a user, and they are on the login page, redirect to home.
+    // If finished loading and there IS a user, and they are on the login page, redirect to inventory.
     if (!loading && user && pathname === '/login') {
-      router.push('/');
+      router.push('/dashboard/inventory');
     }
   }, [user, loading, router, pathname]);
 

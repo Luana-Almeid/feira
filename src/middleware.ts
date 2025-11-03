@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const publicPaths = ['/login'];
 const protectedPaths = [
-    '/', 
+    '/',
     '/dashboard/inventory', 
     '/dashboard/sales', 
     '/dashboard/purchases', 
@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
   }
 
   if (isPublicPath && authCookie) {
-    return NextResponse.redirect(new URL('/', request.nextUrl));
+    return NextResponse.redirect(new URL('/dashboard/inventory', request.nextUrl));
   }
 
   return NextResponse.next();
