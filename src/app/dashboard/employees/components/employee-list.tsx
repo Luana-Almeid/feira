@@ -59,8 +59,8 @@ export function EmployeeList() {
                 <TableHead>CPF</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Perfil</TableHead>
-                <TableHead>Data de Admissão</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Data de Admissão</TableHead>
                 <TableHead>Data de Demissão</TableHead>
                 <TableHead className="w-[60px] text-right">Ações</TableHead>
               </TableRow>
@@ -91,12 +91,12 @@ export function EmployeeList() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {formatDate(employee.admissionDate)}
-                  </TableCell>
-                  <TableCell>
                     <Badge variant={employee.status === 'ativo' ? 'secondary' : 'destructive'}>
                       {employee.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {formatDate(employee.admissionDate)}
                   </TableCell>
                   <TableCell>
                     {formatDate(employee.dismissalDate)}
