@@ -40,6 +40,7 @@ import { useCollection } from '@/hooks/use-collection';
 import { collection, doc, writeBatch, Timestamp, increment } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type Product } from '@/lib/types';
+import { useUser } from '@/hooks/use-user';
 
 const purchaseItemSchema = z.object({
   productId: z.string().min(1, 'Selecione um produto.'),
@@ -57,6 +58,7 @@ export function NewPurchaseDialog() {
   const productsQuery = useMemo(() => collection(db, 'products'), []);
   const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
   const { toast } = useToast();
+  const { user, profile } = useUser();
 
   const form = useForm<z.infer<typeof purchaseSchema>>({
     resolver: zodResolver(purchaseSchema),
@@ -77,6 +79,12 @@ export function NewPurchaseDialog() {
     setLoading(true);
     const total = values.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
 
+    if (!user || !profile) {
+      toast({ variant: 'destructive', title: 'Erro de autenticação', description: 'Usuário não encontrado.' });
+      setLoading(false);
+      return;
+    }
+
     try {
         const batch = writeBatch(db);
 
@@ -86,6 +94,8 @@ export function NewPurchaseDialog() {
             id: transactionRef.id,
             type: 'Compra',
             date: Timestamp.now(),
+            userId: user.uid,
+            userName: profile.name,
             items: values.items.map(item => ({
                 productId: item.productId,
                 productName: productMap.get(item.productId)?.name,

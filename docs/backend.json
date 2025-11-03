@@ -70,6 +70,8 @@
             "id": { "type": "string" },
             "type": { "type": "string", "enum": ["Venda", "Compra", "Descarte"] },
             "date": { "type": "string", "format": "date-time" },
+            "userId": { "type": "string" },
+            "userName": { "type": "string" },
             "items": {
                 "type": "array",
                 "items": {
@@ -86,7 +88,7 @@
             "total": { "type": "number" },
             "reason": { "type": "string" }
         },
-        "required": ["id", "type", "date", "items", "total"]
+        "required": ["id", "type", "date", "userId", "userName", "items", "total"]
     }
   },
   "auth": {

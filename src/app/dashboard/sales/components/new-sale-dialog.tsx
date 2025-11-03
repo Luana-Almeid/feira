@@ -41,6 +41,7 @@ import { collection, doc, runTransaction, Timestamp, increment } from 'firebase/
 import { db } from '@/firebase/client';
 import { type Product } from '@/lib/types';
 import type React from 'react';
+import { useUser } from '@/hooks/use-user';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
@@ -58,6 +59,7 @@ export function NewSaleDialog() {
   const productsQuery = useMemo(() => collection(db, 'products'), []);
   const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
   const { toast } = useToast();
+  const { user, profile } = useUser();
   
   const form = useForm<z.infer<typeof saleSchema>>({
     resolver: zodResolver(saleSchema),
@@ -96,9 +98,7 @@ export function NewSaleDialog() {
       currency: 'BRL'
     }).format(numericValue);
 
-    // We set the visual value to be the formatted one
     e.target.value = formattedValue;
-    // And we set the actual form value to be the numeric one for Zod and calculations
     field.onChange(numericValue);
   };
 
@@ -106,6 +106,12 @@ export function NewSaleDialog() {
   async function onSubmit(values: z.infer<typeof saleSchema>) {
     setLoading(true);
     const total = values.items.reduce((acc, item) => acc + (item.quantity * item.unitPrice), 0);
+
+    if (!user || !profile) {
+      toast({ variant: 'destructive', title: 'Erro de autenticação', description: 'Usuário não encontrado.' });
+      setLoading(false);
+      return;
+    }
 
     try {
         await runTransaction(db, async (transaction) => {
@@ -138,6 +144,8 @@ export function NewSaleDialog() {
                 id: transactionRef.id,
                 type: 'Venda',
                 date: Timestamp.now(),
+                userId: user.uid,
+                userName: profile.name,
                 items: itemDetails,
                 total,
             });
@@ -255,7 +263,6 @@ export function NewSaleDialog() {
                                     {...field}
                                     onChange={(e) => handlePriceChange(e, field)}
                                     value={
-                                      // Display formatted currency if it's a valid number, otherwise show what the user is typing
                                       field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ''
                                     }
                                   />

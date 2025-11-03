@@ -23,6 +23,8 @@ export type Transaction = {
   id: string;
   type: 'Venda' | 'Compra' | 'Descarte';
   date: Timestamp | Date | string;
+  userId: string;
+  userName: string;
   items: TransactionItem[];
   total: number;
   reason?: string; // for discards

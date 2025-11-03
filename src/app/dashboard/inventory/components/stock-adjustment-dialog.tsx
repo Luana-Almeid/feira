@@ -34,10 +34,11 @@ import { Input } from '@/components/ui/input';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2, SlidersHorizontal } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { collection, doc, runTransaction, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, doc, runTransaction, Timestamp, setDoc } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { useCollection } from '@/hooks/use-collection';
 import type { Product } from '@/lib/types';
+import { useUser } from '@/hooks/use-user';
 
 const adjustmentSchema = z.object({
   productId: z.string({ required_error: 'Por favor, selecione um produto.' }),
@@ -52,6 +53,7 @@ export function StockAdjustmentDialog() {
   const productsQuery = useMemo(() => collection(db, 'products'), []);
   const { data: products, loading: productsLoading } = useCollection<Product>(productsQuery);
   const { toast } = useToast();
+  const { user, profile } = useUser();
   
   const form = useForm<z.infer<typeof adjustmentSchema>>({
     resolver: zodResolver(adjustmentSchema),
@@ -70,6 +72,12 @@ export function StockAdjustmentDialog() {
     setLoading(true);
     const productRef = doc(db, 'products', values.productId);
 
+    if (!user || !profile) {
+      toast({ variant: 'destructive', title: 'Erro de autenticação', description: 'Usuário não encontrado.' });
+      setLoading(false);
+      return;
+    }
+
     try {
         await runTransaction(db, async (transaction) => {
             const productDoc = await transaction.get(productRef);
@@ -87,22 +95,24 @@ export function StockAdjustmentDialog() {
 
             transaction.update(productRef, { stock: newStock });
 
-            if (values.adjustmentType === 'subtract' && values.reason) {
-                const discardTransactionRef = doc(collection(db, 'transactions'));
-                transaction.set(discardTransactionRef, {
-                    id: discardTransactionRef.id,
-                    type: 'Descarte',
-                    date: serverTimestamp(),
-                    items: [{
-                        productId: productData.id,
-                        productName: productData.name,
-                        quantity: values.quantity,
-                        unitPrice: productData.purchasePrice
-                    }],
-                    total: values.quantity * productData.purchasePrice,
-                    reason: values.reason
-                });
-            }
+            // Create a transaction log for both add and subtract
+            const discardTransactionRef = doc(collection(db, 'transactions'));
+            transaction.set(discardTransactionRef, {
+                id: discardTransactionRef.id,
+                type: 'Descarte', // This type now represents both additions and subtractions (adjustments)
+                date: Timestamp.now(),
+                userId: user.uid,
+                userName: profile.name,
+                items: [{
+                    productId: productData.id,
+                    productName: productData.name,
+                    quantity: values.quantity,
+                    unitPrice: productData.purchasePrice 
+                }],
+                // Total is negative for subtractions, positive for additions
+                total: quantityToAdjust * productData.purchasePrice,
+                reason: values.reason || (values.adjustmentType === 'add' ? 'Ajuste de entrada' : 'Ajuste de saída')
+            });
         });
 
         toast({ title: "Estoque ajustado!", description: `O estoque de ${selectedProduct?.name} foi atualizado.`});
@@ -202,21 +212,20 @@ export function StockAdjustmentDialog() {
                 </FormItem>
               )}
             />
-            {adjustmentType === 'subtract' && (
+            
               <FormField
                 control={form.control}
                 name="reason"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Motivo da Saída (Opcional)</FormLabel>
+                    <FormLabel>Motivo do Ajuste (Obrigatório)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Perda, Descarte, Uso interno" {...field} />
+                      <Input placeholder="Ex: Perda, Doação, Contagem de estoque" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
             <DialogFooter>
               <Button type="submit" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
