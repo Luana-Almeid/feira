@@ -23,14 +23,9 @@ export function ReportsClient() {
     if (loading) return null;
 
     const sales = transactions.filter(t => t.type === 'Venda');
-    const purchases = transactions.filter(t => t.type === 'Compra');
-
-    const totalRevenue = sales.reduce((acc, sale) => acc + sale.total, 0);
-    const totalCost = purchases.reduce((acc, purchase) => acc + purchase.total, 0);
     
-    // This is a simplified gross profit calculation
-    const grossProfit = totalRevenue - totalCost;
-
+    const totalRevenue = sales.reduce((acc, sale) => acc + sale.total, 0);
+    
     const productSales = new Map<string, { quantity: number, name: string }>();
     sales.forEach(sale => {
       sale.items.forEach(item => {
@@ -52,7 +47,6 @@ export function ReportsClient() {
 
     return {
       totalRevenue,
-      grossProfit,
       bestSellingProduct,
     };
   }, [transactions, loading]);
@@ -73,12 +67,6 @@ export function ReportsClient() {
           value={`R$ ${reportData?.totalRevenue.toFixed(2).replace('.', ',') ?? '0,00'}`}
           icon={DollarSign}
           description="Soma de todas as vendas registradas."
-        />
-        <StatCard
-          title="Lucro Bruto (Simplificado)"
-          value={`R$ ${reportData?.grossProfit.toFixed(2).replace('.', ',') ?? '0,00'}`}
-          icon={TrendingUp}
-          description="Receita total - Custo total das compras."
         />
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
