@@ -57,7 +57,6 @@ export function NewEmployeeForm() {
       email: '',
       password: '',
       role: 'funcionario',
-      admissionDate: new Date(),
     },
   });
 
@@ -109,10 +108,14 @@ export function NewEmployeeForm() {
       router.push('/dashboard/employees');
     } catch (error: any) {
       console.error('Error creating user:', error);
+      let errorMessage = 'Ocorreu um erro ao criar o funcionário.';
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Este e-mail já está em uso por outra conta.';
+      }
       toast({
         variant: 'destructive',
         title: 'Erro ao cadastrar',
-        description: error.message || 'Ocorreu um erro ao criar o funcionário.',
+        description: errorMessage,
       });
     } finally {
         setLoading(false);

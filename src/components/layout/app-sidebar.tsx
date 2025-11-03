@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
@@ -30,20 +30,35 @@ import {
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
 import { Skeleton } from '../ui/skeleton';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/firebase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const menuItems = [
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/purchases', label: 'Compras', icon: Truck, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/employees', label: 'Funcionários', icon: Users, roles: ['administrador'] },
   { href: '/dashboard/reports', label: 'Relatórios', icon: BarChart3, roles: ['administrador'] },
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const { user, profile, loading } = useUser();
   const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({ title: "Você saiu!", description: "Até a próxima!" });
+      router.push('/login');
+    } catch (error) {
+      toast({ variant: 'destructive', title: "Erro ao sair", description: "Não foi possível encerrar a sessão." });
+    }
+  }
 
   const filteredMenuItems = menuItems.filter(item => 
     profile?.role && item.roles.includes(profile.role)
@@ -100,6 +115,18 @@ export function AppSidebar() {
               </span>
             </div>
           </div>
+          <SidebarMenu>
+            <SidebarMenuItem>
+                <SidebarMenuButton
+                tooltip="Sair"
+                className="w-full"
+                onClick={handleLogout}
+                >
+                <LogOut />
+                <span>Sair</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
+        </SidebarMenu>
         <SidebarTrigger>
           <Button variant="ghost" className="w-full justify-center">
               <span className="flex items-center justify-center">
