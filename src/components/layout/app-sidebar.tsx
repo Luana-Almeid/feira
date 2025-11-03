@@ -2,6 +2,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
@@ -24,23 +25,25 @@ import {
   Leaf,
   ChevronLeft,
   Users,
+  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
 import { Skeleton } from '../ui/skeleton';
 
 const menuItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/purchases', label: 'Compras', icon: Truck, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/employees', label: 'Funcionários', icon: Users, roles: ['administrador'] },
   { href: '/dashboard/reports', label: 'Relatórios', icon: BarChart3, roles: ['administrador'] },
+  { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const { user, profile, loading } = useUser();
+  const pathname = usePathname();
 
   const filteredMenuItems = menuItems.filter(item => 
     profile?.role && item.roles.includes(profile.role)
@@ -58,22 +61,25 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {loading ? (
-            <div className="flex flex-col gap-2">
+          {loading && (
+            <div className="flex flex-col gap-2 p-2">
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
               <Skeleton className="h-8 w-full" />
             </div>
-          ) : filteredMenuItems.map((item) => (
+          )}
+          {!loading && filteredMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href}>
-                <SidebarMenuButton
-                  tooltip={item.label}
-                  className="w-full"
-                >
-                  <item.icon />
-                  <span>{item.label}</span>
-                </SidebarMenuButton>
+              <Link href={item.href} legacyBehavior passHref>
+                  <SidebarMenuButton
+                    tooltip={item.label}
+                    className="w-full"
+                    isActive={pathname === item.href}
+                    as="a"
+                  >
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
           ))}
