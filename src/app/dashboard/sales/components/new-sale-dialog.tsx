@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -44,7 +43,7 @@ import type React from 'react';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
-  quantity: z.coerce.number({invalid_type_error: "Apenas números."}).int("Apenas números inteiros.").min(1, "A quantidade mínima é 1."),
+  quantity: z.coerce.number({invalid_type_error: "Apenas números."}).int("A quantidade deve ser um número inteiro.").min(1, "A quantidade mínima é 1."),
   unitPrice: z.coerce.number()
 });
 
@@ -74,24 +73,34 @@ export function NewSaleDialog() {
   const productMap = useMemo(() => new Map(products.map(p => [p.id, p])), [products]);
   const watchItems = form.watch("items");
 
-  const handleNumericInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Allow: backspace, delete, tab, escape, enter, dot, comma
-    if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', '.', ','].includes(e.key) ||
-        // Allow: Ctrl+A, Command+A
-        (e.key === 'a' && (e.ctrlKey || e.metaKey)) ||
-        // Allow: Ctrl+C, Command+C
-        (e.key === 'c' && (e.ctrlKey || e.metaKey)) ||
-        // Allow: Ctrl+V, Command+V
-        (e.key === 'v' && (e.ctrlKey || e.metaKey)) ||
-        // Allow: Ctrl+X, Command+X
-        (e.key === 'x' && (e.ctrlKey || e.metaKey)) ||
-        // Allow: home, end, left, right, down, up
-        (e.key.startsWith('Arrow'))) {
-          return;
+  const handleNumericInput = (e: React.KeyboardEvent<HTMLInputElement>, allowDecimal: boolean) => {
+    // Allow control keys
+    if (['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
+      return;
     }
-    // Ensure that it is a number and stop the keypress
-    if (isNaN(Number(e.key)) && e.key !== '.' && e.key !== ',') {
+     // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x'].includes(e.key.toLowerCase())) {
+        return;
+    }
+
+    const currentValue = e.currentTarget.value;
+    const isDecimalSeparator = e.key === '.' || e.key === ',';
+
+    // For quantity, don't allow decimal separators
+    if (!allowDecimal && isDecimalSeparator) {
         e.preventDefault();
+        return;
+    }
+    
+    // For unit price, allow only one decimal separator
+    if (allowDecimal && isDecimalSeparator && (currentValue.includes('.') || currentValue.includes(','))) {
+        e.preventDefault();
+        return;
+    }
+
+    // Prevent non-numeric characters (except for the allowed decimal separator)
+    if (!/^[0-9]$/.test(e.key) && !(allowDecimal && isDecimalSeparator)) {
+      e.preventDefault();
     }
   };
 
@@ -182,16 +191,21 @@ export function NewSaleDialog() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <ScrollArea className="h-72 w-full">
               <div className="space-y-4 pr-4">
+                 <div className="hidden grid-cols-[1fr_100px_120px_auto] gap-2 items-end sm:grid">
+                    <Label>Produto</Label>
+                    <Label>Qtd.</Label>
+                    <Label>Preço Unit. (R$)</Label>
+                </div>
                 {fields.map((field, index) => {
                   const selectedProduct = productMap.get(watchItems[index]?.productId);
                   return (
-                    <div key={field.id} className="grid grid-cols-[1fr_100px_120px_auto] gap-2 items-end">
+                    <div key={field.id} className="grid grid-cols-1 sm:grid-cols-[1fr_100px_120px_auto] gap-2 items-end">
                       <FormField
                         control={form.control}
                         name={`items.${index}.productId`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className={index > 0 ? 'sr-only' : ''}>Produto</FormLabel>
+                             <Label className="sm:hidden">Produto</Label>
                             <Select
                               onValueChange={(value) => {
                                 field.onChange(value);
@@ -221,9 +235,9 @@ export function NewSaleDialog() {
                         name={`items.${index}.quantity`}
                         render={({ field }) => (
                           <FormItem>
-                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
+                            <Label className="sm:hidden">Qtd. {selectedProduct && `(${selectedProduct.unit})`}</Label>
                             <FormControl>
-                              <Input type="number" placeholder="0" {...field} onKeyDown={handleNumericInput}/>
+                              <Input type="number" placeholder="0" {...field} onKeyDown={(e) => handleNumericInput(e, false)} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -234,9 +248,9 @@ export function NewSaleDialog() {
                         name={`items.${index}.unitPrice`}
                         render={({ field }) => (
                           <FormItem>
-                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Preço Unit. (R$)</FormLabel>
+                             <Label className="sm:hidden">Preço Unit. (R$)</Label>
                             <FormControl>
-                              <Input type="number" step="0.01" placeholder="R$ 0,00" {...field} onKeyDown={handleNumericInput}/>
+                              <Input type="number" step="0.01" placeholder="R$ 0,00" {...field} onKeyDown={(e) => handleNumericInput(e, true)}/>
                             </FormControl>
                              <FormMessage />
                           </FormItem>
@@ -288,5 +302,3 @@ export function NewSaleDialog() {
     </Dialog>
   );
 }
-
-    
