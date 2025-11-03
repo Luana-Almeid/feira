@@ -74,11 +74,34 @@ export function NewSaleDialog() {
   const productMap = useMemo(() => new Map(products.map(p => [p.id, p])), [products]);
   const watchItems = form.watch("items");
   
-  const handleNumericChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
     const value = e.target.value;
     const numericValue = value.replace(/[^0-9]/g, '');
-    field.onChange(numericValue === '' ? '' : Number(numericValue));
+    field.onChange(numericValue === '' ? '' : parseInt(numericValue, 10));
   };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const value = e.target.value;
+    const rawValue = value.replace(/[^0-9]/g, '');
+    
+    if (rawValue === '') {
+      field.onChange('');
+      return;
+    }
+    
+    const numericValue = parseFloat(rawValue) / 100;
+    
+    const formattedValue = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(numericValue);
+
+    // We set the visual value to be the formatted one
+    e.target.value = formattedValue;
+    // And we set the actual form value to be the numeric one for Zod and calculations
+    field.onChange(numericValue);
+  };
+
 
   async function onSubmit(values: z.infer<typeof saleSchema>) {
     setLoading(true);
@@ -142,7 +165,7 @@ export function NewSaleDialog() {
   }
 
   const total = watchItems.reduce((acc, currentItem) => {
-    const itemTotal = (currentItem.quantity || 0) * (currentItem.unitPrice || 0);
+    const itemTotal = (Number(currentItem.quantity) || 0) * (Number(currentItem.unitPrice) || 0);
     return acc + itemTotal;
   }, 0);
 
@@ -166,87 +189,94 @@ export function NewSaleDialog() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <ScrollArea className="h-72 w-full">
               <div className="space-y-4 pr-4">
-                 <div className="hidden grid-cols-[1fr_100px_120px_auto] gap-2 items-end sm:grid">
-                    <Label>Produto</Label>
-                    <Label>Qtd.</Label>
-                    <Label>Preço Unit. (R$)</Label>
-                </div>
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-1 sm:grid-cols-[1fr_100px_120px_auto] gap-2 items-end">
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.productId`}
-                        render={({ field }) => (
-                          <FormItem>
-                             <Label className="sm:hidden">Produto</Label>
-                            <Select
-                              onValueChange={(value) => {
-                                field.onChange(value);
-                                handleProductChange(value, index);
-                              }}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {products.map((product) => (
-                                  <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
-                                    {product.name} {product.stock <= 0 && '(Sem estoque)'}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.quantity`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <Label className="sm:hidden">Qtd.</Label>
-                            <FormControl>
-                              <Input 
-                                placeholder="0" 
-                                {...field}
-                                onChange={(e) => handleNumericChange(e, field)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.unitPrice`}
-                        render={({ field }) => (
-                          <FormItem>
-                             <Label className="sm:hidden">Preço Unit. (R$)</Label>
-                            <FormControl>
-                              <Input 
-                                placeholder="R$ 0,00" 
-                                {...field}
-                                onChange={(e) => handleNumericChange(e, field)}
-                              />
-                            </FormControl>
-                             <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => remove(index)}
-                        disabled={fields.length <= 1}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Remover item</span>
-                      </Button>
+                  <div key={field.id} className="grid grid-cols-12 gap-x-2 gap-y-1 items-end">
+                      <div className="col-span-12 sm:col-span-5">
+                          {index === 0 && <Label>Produto</Label>}
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.productId`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <Select
+                                  onValueChange={(value) => {
+                                    field.onChange(value);
+                                    handleProductChange(value, index);
+                                  }}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {products.map((product) => (
+                                      <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
+                                        {product.name} {product.stock <= 0 && '(Sem estoque)'}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                      </div>
+                      <div className="col-span-4 sm:col-span-2">
+                         {index === 0 && <Label>Qtd.</Label>}
+                         <FormField
+                            control={form.control}
+                            name={`items.${index}.quantity`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="0" 
+                                    {...field}
+                                    onChange={(e) => handleQuantityChange(e, field)}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                      </div>
+                      <div className="col-span-8 sm:col-span-4">
+                          {index === 0 && <Label>Preço Unit. (R$)</Label>}
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.unitPrice`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="R$ 0,00" 
+                                    {...field}
+                                    onChange={(e) => handlePriceChange(e, field)}
+                                    value={
+                                      // Display formatted currency if it's a valid number, otherwise show what the user is typing
+                                      field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ''
+                                    }
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                      </div>
+                      <div className="col-span-1 self-center">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => remove(index)}
+                          disabled={fields.length <= 1}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remover item</span>
+                        </Button>
+                      </div>
                     </div>
                 ))}
               </div>
