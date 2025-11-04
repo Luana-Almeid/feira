@@ -23,13 +23,14 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '@/firebase/client';
+import { app as mainApp, db } from '@/firebase/client'; // Renomeado para evitar conflito
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { DatePicker } from '@/components/ui/datepicker';
+import { initializeApp, deleteApp } from 'firebase/app';
 
 const employeeSchema = z.object({
   name: z.string().min(1, 'O nome é obrigatório.'),
@@ -80,10 +81,14 @@ export function NewEmployeeForm() {
 
   async function onSubmit(values: z.infer<typeof employeeSchema>) {
     setLoading(true);
+    // Create a temporary secondary app to create users without logging out the admin
+    const secondaryApp = initializeApp(mainApp.options, `secondary-app-${Date.now()}`);
+    const secondaryAuth = getAuth(secondaryApp);
+
     try {
-      // 1. Create user in Firebase Auth
+      // 1. Create user in Firebase Auth using the secondary instance
       const userCredential = await createUserWithEmailAndPassword(
-        auth,
+        secondaryAuth,
         values.email,
         values.password
       );
@@ -119,6 +124,8 @@ export function NewEmployeeForm() {
       });
     } finally {
         setLoading(false);
+        // Clean up the secondary app
+        await deleteApp(secondaryApp);
     }
   }
 
