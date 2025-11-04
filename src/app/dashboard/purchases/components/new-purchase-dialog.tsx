@@ -163,90 +163,88 @@ export function NewPurchaseDialog() {
               <div className="col-span-2"><Label>Custo Unit. (R$)</Label></div>
             </div>
 
-            <ScrollArea className="flex-grow -mx-4">
-              <div className="space-y-4 px-4">
-                {fields.map((field, index) => {
-                  return (
-                    <div key={field.id} className="grid grid-cols-12 gap-x-4 items-center">
-                      <div className="col-span-6">
-                         <FormField
-                          control={form.control}
-                          name={`items.${index}.productId`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <Select
-                                onValueChange={(value) => {
-                                  field.onChange(value);
-                                  handleProductChange(value, index);
-                                }}
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {products.map((product) => (
-                                    <SelectItem key={product.id} value={product.id}>
-                                      {product.name}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                     
-                      <div className="col-span-2">
-                         <FormField
-                          control={form.control}
-                          name={`items.${index}.quantity`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input type="number" {...field} placeholder="0" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="col-span-2">
+            <ScrollArea className="flex-grow p-1 space-y-4">
+              {fields.map((field, index) => {
+                return (
+                  <div key={field.id} className="grid grid-cols-12 gap-x-4 items-center">
+                    <div className="col-span-6">
                         <FormField
-                          control={form.control}
-                          name={`items.${index}.unitPrice`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <Input type="number" step="0.01" {...field} placeholder="R$ 0,00" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-
-                      <div className="col-span-2 flex items-center justify-center">
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => remove(index)}
-                          disabled={fields.length <= 1}
-                          className="h-10 w-10"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remover item</span>
-                        </Button>
-                      </div>
+                        control={form.control}
+                        name={`items.${index}.productId`}
+                        render={({ field }) => (
+                        <FormItem>
+                            <Select
+                            onValueChange={(value) => {
+                                field.onChange(value);
+                                handleProductChange(value, index);
+                            }}
+                            value={field.value}
+                            >
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {products.map((product) => (
+                                <SelectItem key={product.id} value={product.id}>
+                                    {product.name}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
                     </div>
-                  )
-                })}
-              </div>
+                    
+                    <div className="col-span-2">
+                        <FormField
+                        control={form.control}
+                        name={`items.${index}.quantity`}
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormControl>
+                            <Input type="number" {...field} placeholder="0" />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    </div>
+
+                    <div className="col-span-2">
+                    <FormField
+                        control={form.control}
+                        name={`items.${index}.unitPrice`}
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormControl>
+                            <Input type="number" step="0.01" {...field} placeholder="R$ 0,00" />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    </div>
+
+                    <div className="col-span-2 flex items-center justify-center">
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => remove(index)}
+                        disabled={fields.length <= 1}
+                        className="h-10 w-10"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Remover item</span>
+                    </Button>
+                    </div>
+                  </div>
+                )
+              })}
             </ScrollArea>
 
             <div className="flex items-center gap-2">
