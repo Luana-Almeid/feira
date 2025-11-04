@@ -6,7 +6,7 @@ interface WithId {
     id: string;
 }
 
-export function useCollection<T extends DocumentData>(query: Query | null) {
+export function useCollection<T extends DocumentData>(query: Query | null, deps: any[] = []) {
   const [data, setData] = useState<(T & WithId)[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -40,7 +40,8 @@ export function useCollection<T extends DocumentData>(query: Query | null) {
 
     // Unsubscribe when the component unmounts or the query changes.
     return () => unsubscribe();
-  }, [query]); 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, ...deps]); 
 
   return { data, loading, error };
 }

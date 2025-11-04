@@ -21,12 +21,17 @@ import type { UserProfile } from '@/lib/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Timestamp } from 'firebase/firestore';
+import { Button } from '@/components/ui/button';
+import { ArrowUpDown } from 'lucide-react';
+import type { SortDescriptor } from '@/hooks/use-sortable-data';
 
 type EmployeeActivityTableProps = {
     users: UserProfile[];
+    sortDescriptor: SortDescriptor | null;
+    onSortChange: (descriptor: SortDescriptor) => void;
 };
 
-export function EmployeeActivityTable({ users }: EmployeeActivityTableProps) {
+export function EmployeeActivityTable({ users, sortDescriptor, onSortChange }: EmployeeActivityTableProps) {
     const formatDate = (date: string | Date | Timestamp | null | undefined) => {
         if (!date) return 'N/A';
         if (date instanceof Timestamp) {
@@ -34,6 +39,11 @@ export function EmployeeActivityTable({ users }: EmployeeActivityTableProps) {
         }
         return format(new Date(date), 'dd/MM/yyyy', { locale: ptBR });
     }
+
+    const handleSort = (key: string) => {
+      const direction = sortDescriptor?.key === key && sortDescriptor.direction === 'ascending' ? 'descending' : 'ascending';
+      onSortChange({ key, direction });
+    };
 
   return (
     <Card>
@@ -48,12 +58,42 @@ export function EmployeeActivityTable({ users }: EmployeeActivityTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Perfil</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Data de Admissão</TableHead>
-                <TableHead>Data de Demissão</TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort('name')}>
+                    Nome
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort('email')}>
+                    Email
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort('role')}>
+                    Perfil
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort('status')}>
+                    Status
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button variant="ghost" onClick={() => handleSort('admissionDate')}>
+                    Data de Admissão
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead>
+                   <Button variant="ghost" onClick={() => handleSort('dismissalDate')}>
+                    Data de Demissão
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
