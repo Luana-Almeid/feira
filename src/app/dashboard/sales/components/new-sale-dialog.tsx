@@ -198,14 +198,14 @@ export function NewSaleDialog() {
             <ScrollArea className="h-72 w-full">
               <div className="space-y-4 pr-4">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="flex items-end gap-x-2">
-                      <div className="flex-1 space-y-2">
-                          {index === 0 && <Label>Produto</Label>}
+                  <div key={field.id} className="flex items-start gap-x-2">
+                      <div className="flex-1">
+                          {index === 0 && <Label className="mb-2 block">Produto</Label>}
                           <FormField
                             control={form.control}
                             name={`items.${index}.productId`}
                             render={({ field }) => (
-                              <FormItem className='min-h-[70px]'>
+                              <FormItem className='h-14'>
                                 <Select
                                   onValueChange={(value) => {
                                     field.onChange(value);
@@ -231,13 +231,13 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <div className="w-20 space-y-2">
-                         {index === 0 && <Label>Qtd.</Label>}
+                      <div className="w-20">
+                         {index === 0 && <Label className="mb-2 block">Qtd.</Label>}
                          <FormField
                             control={form.control}
                             name={`items.${index}.quantity`}
                             render={({ field }) => (
-                              <FormItem className='min-h-[70px]'>
+                              <FormItem className='h-14'>
                                 <FormControl>
                                   <Input 
                                     placeholder="0" 
@@ -250,13 +250,13 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <div className="w-40 space-y-2">
-                          {index === 0 && <Label>Preço Unit. (R$)</Label>}
+                      <div className="w-40">
+                          {index === 0 && <Label className="mb-2 block">Preço Unit. (R$)</Label>}
                           <FormField
                             control={form.control}
                             name={`items.${index}.unitPrice`}
                             render={({ field }) => (
-                              <FormItem className='min-h-[70px]'>
+                              <FormItem className='h-14'>
                                 <FormControl>
                                   <Input 
                                     placeholder="R$ 0,00" 
@@ -272,16 +272,19 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => remove(index)}
-                        disabled={fields.length <= 1}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Remover item</span>
-                      </Button>
+                      <div className="flex h-full items-center">
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => remove(index)}
+                          disabled={fields.length <= 1}
+                          className="mt-8"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Remover item</span>
+                        </Button>
+                      </div>
                     </div>
                 ))}
               </div>
