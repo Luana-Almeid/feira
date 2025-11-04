@@ -45,7 +45,10 @@ import type React from 'react';
 
 const purchaseItemSchema = z.object({
   productId: z.string().min(1, 'Selecione um produto.'),
-  quantity: z.coerce.number().min(1, 'A quantidade mínima é 1.'),
+  quantity: z.coerce
+    .number({ invalid_type_error: "Inválido" })
+    .int("Inválido")
+    .min(1, "Mínimo 1."),
   unitPrice: z.coerce.number().min(0, 'O preço de compra não pode ser negativo.'),
 });
 
@@ -193,7 +196,7 @@ export function NewPurchaseDialog() {
             <ScrollArea className="flex-grow -mx-1">
               <div className="space-y-4 p-1">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 items-center gap-x-4">
+                  <div key={field.id} className="grid grid-cols-12 items-start gap-x-4">
                     <div className="col-span-6">
                       <FormField
                         control={form.control}
@@ -264,7 +267,7 @@ export function NewPurchaseDialog() {
                         )}
                       />
                     </div>
-                    <div className="col-span-1 flex items-center justify-center">
+                    <div className="col-span-1 flex items-center justify-center mt-8">
                          <Button
                             type="button"
                             variant="destructive"
@@ -321,5 +324,7 @@ export function NewPurchaseDialog() {
     </Dialog>
   );
 }
+
+    
 
     
