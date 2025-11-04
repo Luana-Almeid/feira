@@ -152,9 +152,11 @@ export function SalesHistory() {
                   <TableCell className="font-medium">{sale.userName}</TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium">
-                        {sale.items.length} {sale.items.length > 1 ? 'itens' : 'item'}
-                      </span>
+                      {sale.items.map((item, index) => (
+                        <span key={index} className="text-sm">
+                          {item.quantity}x {item.productName}
+                        </span>
+                      ))}
                     </div>
                   </TableCell>
                   <TableCell className="text-right font-medium">
