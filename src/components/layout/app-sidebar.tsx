@@ -35,11 +35,11 @@ import { auth } from '@/firebase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/purchases', label: 'Compras', icon: Truck, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/employees', label: 'Funcionários', icon: Users, roles: ['administrador'] },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/reports', label: 'Relatórios', icon: BarChart3, roles: ['administrador'] },
 ];
 
@@ -51,12 +51,9 @@ export function AppSidebar() {
   const { toast } = useToast();
 
   const handleLogout = async () => {
-    // This is a placeholder as we are using a mock user.
-    // In a real scenario, you would call signOut.
+    await signOut(auth);
     toast({ title: "Você saiu!", description: "Até a próxima!" });
-    // Since there's no real login, we can't redirect to a login page.
-    // We'll just stay on the current page or redirect to a safe default.
-    router.push('/dashboard/inventory'); 
+    router.push('/login'); 
   }
 
   const filteredMenuItems = menuItems.filter(item => 

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -163,16 +164,16 @@ export function DashboardClient() {
           description={`${transactionsToday} transações hoje`}
         />
         <StatCard
-          title="Funcionários Ativos"
-          value={activeEmployees}
-          icon={Users}
-          description={`${inactiveEmployees} funcionários inativos`}
-        />
-        <StatCard
           title="Produtos em Estoque"
           value={totalProducts}
           icon={Package}
           description="Itens diferentes cadastrados"
+        />
+        <StatCard
+          title="Funcionários Ativos"
+          value={activeEmployees}
+          icon={Users}
+          description={`${inactiveEmployees} funcionários inativos`}
         />
         <StatCard
             title="Funcionários Inativos"
