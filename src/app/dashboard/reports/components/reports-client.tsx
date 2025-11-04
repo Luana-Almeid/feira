@@ -84,7 +84,7 @@ export function ReportsClient() {
                 />
             </div>
             
-            <TabsContent value="sales" forceMount={true} className={activeTab === 'sales' ? 'block' : 'hidden'}>
+            <TabsContent value="sales" key="sales">
                 <TransactionTable 
                     title="Histórico de Vendas" 
                     description="Todas as vendas registradas." 
@@ -93,7 +93,7 @@ export function ReportsClient() {
                     onSortChange={setSortDescriptor}
                 />
             </TabsContent>
-            <TabsContent value="purchases" forceMount={true} className={activeTab === 'purchases' ? 'block' : 'hidden'}>
+            <TabsContent value="purchases" key="purchases">
                 <TransactionTable 
                     title="Histórico de Compras" 
                     description="Todas as compras de fornecedores." 
@@ -102,7 +102,7 @@ export function ReportsClient() {
                     onSortChange={setSortDescriptor}
                 />
             </TabsContent>
-            <TabsContent value="adjustments" forceMount={true} className={activeTab === 'adjustments' ? 'block' : 'hidden'}>
+            <TabsContent value="adjustments" key="adjustments">
                 <TransactionTable 
                     title="Histórico de Ajustes e Descartes" 
                     description="Entradas e saídas manuais do estoque." 
@@ -111,7 +111,7 @@ export function ReportsClient() {
                     onSortChange={setSortDescriptor}
                 />
             </TabsContent>
-            <TabsContent value="employees" forceMount={true} className={activeTab === 'employees' ? 'block' : 'hidden'}>
+            <TabsContent value="employees" key="employees">
                 <EmployeeActivityTable 
                     users={sortedData as UserProfile[]} 
                     sortDescriptor={sortDescriptor}
