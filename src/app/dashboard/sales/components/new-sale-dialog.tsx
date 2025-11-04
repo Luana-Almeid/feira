@@ -196,16 +196,16 @@ export function NewSaleDialog() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <ScrollArea className="h-72 w-full">
-              <div className="space-y-8 pr-4">
+              <div className="space-y-4 pr-4">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 gap-x-2 items-start">
-                      <div className="col-span-12 sm:col-span-5">
+                  <div key={field.id} className="flex items-end gap-x-2">
+                      <div className="flex-1 space-y-2">
                           {index === 0 && <Label>Produto</Label>}
                           <FormField
                             control={form.control}
                             name={`items.${index}.productId`}
                             render={({ field }) => (
-                              <FormItem>
+                              <FormItem className='min-h-[70px]'>
                                 <Select
                                   onValueChange={(value) => {
                                     field.onChange(value);
@@ -231,13 +231,13 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <div className="col-span-4 sm:col-span-2">
+                      <div className="w-20 space-y-2">
                          {index === 0 && <Label>Qtd.</Label>}
                          <FormField
                             control={form.control}
                             name={`items.${index}.quantity`}
                             render={({ field }) => (
-                              <FormItem>
+                              <FormItem className='min-h-[70px]'>
                                 <FormControl>
                                   <Input 
                                     placeholder="0" 
@@ -250,13 +250,13 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <div className="col-span-8 sm:col-span-4">
+                      <div className="w-40 space-y-2">
                           {index === 0 && <Label>Preço Unit. (R$)</Label>}
                           <FormField
                             control={form.control}
                             name={`items.${index}.unitPrice`}
                             render={({ field }) => (
-                              <FormItem>
+                              <FormItem className='min-h-[70px]'>
                                 <FormControl>
                                   <Input 
                                     placeholder="R$ 0,00" 
@@ -272,18 +272,16 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <div className="col-span-1 self-center mt-1">
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => remove(index)}
-                          disabled={fields.length <= 1}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Remover item</span>
-                        </Button>
-                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => remove(index)}
+                        disabled={fields.length <= 1}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Remover item</span>
+                      </Button>
                     </div>
                 ))}
               </div>
