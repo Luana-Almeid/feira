@@ -120,7 +120,7 @@ export function ActivityChart({ data, type }: ActivityChartProps) {
                     className="h-[300px] w-full"
                 >
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: -10 }}>
+                        <BarChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 0 }}>
                             <XAxis dataKey="date" tickLine={false} axisLine={false} />
                             <YAxis tickLine={false} axisLine={false} tickFormatter={type !== 'employees' ? (value) => `R$${value}` : (value) => `${value}`} />
                             <Tooltip
@@ -149,4 +149,3 @@ export function ActivityChart({ data, type }: ActivityChartProps) {
         </Card>
     );
 }
-
