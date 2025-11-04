@@ -187,16 +187,16 @@ export function NewPurchaseDialog() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow min-h-0 space-y-4">
             
-            <div className="grid grid-cols-12 gap-x-4 px-1">
+            <div className="grid grid-cols-12 gap-x-4">
               <div className="col-span-6"><Label>Produto</Label></div>
               <div className="col-span-2"><Label>Qtd.</Label></div>
               <div className="col-span-3"><Label>Custo (R$)</Label></div>
             </div>
 
-            <ScrollArea className="flex-grow -mx-1">
+            <ScrollArea className="flex-grow">
               <div className="space-y-4 p-1">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 items-center gap-x-4">
+                  <div key={field.id} className="grid grid-cols-12 items-start gap-x-4">
                     <div className="col-span-6">
                       <FormField
                         control={form.control}
@@ -267,7 +267,7 @@ export function NewPurchaseDialog() {
                         )}
                       />
                     </div>
-                    <div className="col-span-1 flex items-center justify-center">
+                    <div className="col-span-1 flex items-center mt-8">
                          <Button
                             type="button"
                             variant="destructive"
@@ -324,9 +324,5 @@ export function NewPurchaseDialog() {
     </Dialog>
   );
 }
-
-    
-
-    
 
     
