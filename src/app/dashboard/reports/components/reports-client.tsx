@@ -16,6 +16,43 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+const searchKeysMap = {
+  sales: ['userName', 'items.productName', 'total'],
+  purchases: ['userName', 'items.productName', 'total'],
+  adjustments: ['userName', 'items.productName', 'reason', 'total'],
+  employees: ['name', 'email', 'cpf', 'role', 'status']
+};
+
+const TabContent = ({ 
+  data, 
+  type, 
+  searchTerm, 
+  sortDescriptor, 
+  onSortChange 
+}: { 
+  data: any[], 
+  type: keyof typeof searchKeysMap, 
+  searchTerm: string, 
+  sortDescriptor: SortDescriptor | null, 
+  onSortChange: (descriptor: SortDescriptor) => void 
+}) => {
+  
+  const { sortedData } = useSortableData(data, sortDescriptor, searchTerm, searchKeysMap[type]);
+  
+  switch(type) {
+    case 'sales':
+      return <TransactionTable title="Histórico de Vendas" description="Todas as vendas registradas." transactions={sortedData as Transaction[]} sortDescriptor={sortDescriptor} onSortChange={onSortChange} />;
+    case 'purchases':
+      return <TransactionTable title="Histórico de Compras" description="Todas as compras de fornecedores." transactions={sortedData as Transaction[]} sortDescriptor={sortDescriptor} onSortChange={onSortChange} />;
+    case 'adjustments':
+      return <TransactionTable title="Histórico de Ajustes e Descartes" description="Entradas e saídas manuais do estoque." transactions={sortedData as Transaction[]} sortDescriptor={sortDescriptor} onSortChange={onSortChange} />;
+    case 'employees':
+      return <EmployeeActivityTable users={sortedData as UserProfile[]} sortDescriptor={sortDescriptor} onSortChange={onSortChange} />;
+    default:
+      return null;
+  }
+}
+
 export function ReportsClient() {
   const [activeTab, setActiveTab] = useState('sales');
   const [searchTerm, setSearchTerm] = useState('');
@@ -33,13 +70,6 @@ export function ReportsClient() {
   const purchases = useMemo(() => transactions.filter(t => t.type === 'Compra'), [transactions]);
   const adjustments = useMemo(() => transactions.filter(t => t.type === 'Descarte'), [transactions]);
   
-  const searchKeysMap = {
-    sales: ['userName', 'items.productName', 'total'],
-    purchases: ['userName', 'items.productName', 'total'],
-    adjustments: ['userName', 'items.productName', 'reason', 'total'],
-    employees: ['name', 'email', 'cpf', 'role', 'status']
-  };
-
   const currentData = useMemo(() => {
     switch(activeTab) {
       case 'sales': return sales;
@@ -49,9 +79,8 @@ export function ReportsClient() {
       default: return [];
     }
   }, [activeTab, sales, purchases, adjustments, users]);
-
+  
   const { sortedData } = useSortableData(currentData, sortDescriptor, searchTerm, searchKeysMap[activeTab as keyof typeof searchKeysMap]);
-
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -157,41 +186,21 @@ export function ReportsClient() {
                 />
             </div>
             
-            <TabsContent value="sales" key={`sales-tab`}>
-                <TransactionTable 
-                    title="Histórico de Vendas" 
-                    description="Todas as vendas registradas." 
-                    transactions={sortedData as Transaction[]} 
-                    sortDescriptor={sortDescriptor}
-                    onSortChange={setSortDescriptor}
-                />
+            <TabsContent value="sales">
+                <TabContent data={sales} type="sales" searchTerm={searchTerm} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />
             </TabsContent>
-            <TabsContent value="purchases" key={`purchases-tab`}>
-                <TransactionTable 
-                    title="Histórico de Compras" 
-                    description="Todas as compras de fornecedores." 
-                    transactions={sortedData as Transaction[]} 
-                    sortDescriptor={sortDescriptor}
-                    onSortChange={setSortDescriptor}
-                />
+            <TabsContent value="purchases">
+                <TabContent data={purchases} type="purchases" searchTerm={searchTerm} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />
             </TabsContent>
-            <TabsContent value="adjustments" key={`adjustments-tab`}>
-                <TransactionTable 
-                    title="Histórico de Ajustes e Descartes" 
-                    description="Entradas e saídas manuais do estoque." 
-                    transactions={sortedData as Transaction[]} 
-                    sortDescriptor={sortDescriptor}
-                    onSortChange={setSortDescriptor}
-                />
+            <TabsContent value="adjustments">
+                <TabContent data={adjustments} type="adjustments" searchTerm={searchTerm} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />
             </TabsContent>
-            <TabsContent value="employees" key={`employees-tab`}>
-                <EmployeeActivityTable 
-                    users={sortedData as UserProfile[]} 
-                    sortDescriptor={sortDescriptor}
-                    onSortChange={setSortDescriptor}
-                />
+            <TabsContent value="employees">
+                <TabContent data={users} type="employees" searchTerm={searchTerm} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />
             </TabsContent>
         </Tabs>
     </div>
   );
 }
+
+    
