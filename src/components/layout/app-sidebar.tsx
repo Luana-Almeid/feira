@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
@@ -26,12 +26,16 @@ import {
   ChevronLeft,
   Users,
   KeyRound,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
 import { Skeleton } from '../ui/skeleton';
 import { useState } from 'react';
 import { ResetPasswordDialog } from '../auth/reset-password-dialog';
+import { auth } from '@/firebase/client';
+import { signOut } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
 
 const menuItems = [
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
@@ -46,7 +50,15 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const { user, profile, loading } = useUser();
   const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
   const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    toast({ title: 'Até logo!', description: 'Você saiu da sua conta com segurança.' });
+    router.push('/login');
+  };
 
   const filteredMenuItems = menuItems.filter(item => 
     profile?.role && item.roles.includes(profile.role)
@@ -119,6 +131,16 @@ export function AppSidebar() {
               >
                 <KeyRound />
                 <span>Redefinir Senha</span>
+              </SidebarMenuButton>
+          </SidebarMenuItem>
+           <SidebarMenuItem>
+             <SidebarMenuButton
+                tooltip="Sair"
+                className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+                onClick={handleLogout}
+              >
+                <LogOut />
+                <span>Sair</span>
               </SidebarMenuButton>
           </SidebarMenuItem>
         <SidebarTrigger>

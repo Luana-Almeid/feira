@@ -1,0 +1,136 @@
+
+'use client';
+
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Leaf } from 'lucide-react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/firebase/client';
+import { useUser } from '@/hooks/use-user';
+import { useRouter } from 'next/navigation';
+
+const loginSchema = z.object({
+  email: z.string().email('E-mail inválido.'),
+  password: z.string().min(1, 'A senha é obrigatória.'),
+});
+
+export default function LoginPage() {
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const { user } = useUser();
+  const router = useRouter();
+
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof loginSchema>) {
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, values.email, values.password);
+      toast({
+        title: 'Bem-vindo(a) de volta!',
+      });
+      // O redirecionamento será tratado pelo AuthProvider
+    } catch (error: any) {
+      let errorMessage = 'Ocorreu um erro ao tentar fazer login.';
+      // https://firebase.google.com/docs/auth/admin/errors
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        errorMessage = 'E-mail ou senha inválidos.';
+      }
+      toast({
+        variant: 'destructive',
+        title: 'Erro de Autenticação',
+        description: errorMessage,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (user) {
+    router.push('/dashboard');
+    return null;
+  }
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+                    <Leaf className="h-7 w-7 text-primary-foreground" />
+                </div>
+            </div>
+          <CardTitle className="text-2xl font-headline">Bem-vindo(a)!</CardTitle>
+          <CardDescription>
+            Faça login para acessar o sistema
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>E-mail</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="seu@email.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Senha</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? <Loader2 className="animate-spin" /> : 'Entrar'}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+        <CardFooter className="flex justify-center text-xs">
+            <p className='text-muted-foreground'>Excelência Frutas © {new Date().getFullYear()}</p>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
