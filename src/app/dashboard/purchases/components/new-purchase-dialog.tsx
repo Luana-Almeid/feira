@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, User } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { NewProductDialog } from '@/app/dashboard/inventory/components/new-product-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -41,6 +41,7 @@ import { collection, doc, writeBatch, Timestamp, increment } from 'firebase/fire
 import { db } from '@/firebase/client';
 import { type Product } from '@/lib/types';
 import { useUser } from '@/hooks/use-user';
+import { Label } from '@/components/ui/label';
 
 const purchaseItemSchema = z.object({
   productId: z.string().min(1, 'Selecione um produto.'),
@@ -146,7 +147,7 @@ export function NewPurchaseDialog() {
           Registrar Compra
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="sm:max-w-4xl flex flex-col h-full sm:h-auto">
         <DialogHeader>
           <DialogTitle>Registrar Nova Compra</DialogTitle>
           <DialogDescription>
@@ -154,76 +155,90 @@ export function NewPurchaseDialog() {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <ScrollArea className="h-72 w-full">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow min-h-0 space-y-4">
+            
+            <div className="grid grid-cols-12 gap-x-4 px-1">
+              <div className="col-span-6"><Label>Produto</Label></div>
+              <div className="col-span-2"><Label>Qtd.</Label></div>
+              <div className="col-span-2"><Label>Custo Unit. (R$)</Label></div>
+            </div>
+
+            <ScrollArea className="flex-grow">
               <div className="space-y-4 pr-4">
                 {fields.map((field, index) => {
                   const selectedProduct = productMap.get(watchItems[index]?.productId);
                   return (
-                    <div key={field.id} className="grid grid-cols-12 gap-2 sm:gap-4 items-end">
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.productId`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-12 sm:col-span-6">
-                            <FormLabel className={index > 0 ? 'sr-only' : ''}>Produto</FormLabel>
-                            <Select
-                              onValueChange={(value) => {
-                                field.onChange(value);
-                                handleProductChange(value, index);
-                              }}
-                              value={field.value}
-                            >
+                    <div key={field.id} className="grid grid-cols-12 gap-x-4 items-center">
+                      <div className="col-span-6">
+                         <FormField
+                          control={form.control}
+                          name={`items.${index}.productId`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <Select
+                                onValueChange={(value) => {
+                                  field.onChange(value);
+                                  handleProductChange(value, index);
+                                }}
+                                value={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {products.map((product) => (
+                                    <SelectItem key={product.id} value={product.id}>
+                                      {product.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                     
+                      <div className="col-span-2">
+                         <FormField
+                          control={form.control}
+                          name={`items.${index}.quantity`}
+                          render={({ field }) => (
+                            <FormItem>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
-                                </SelectTrigger>
+                                <Input type="number" {...field} placeholder="0" />
                               </FormControl>
-                              <SelectContent>
-                                {products.map((product) => (
-                                  <SelectItem key={product.id} value={product.id}>
-                                    {product.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.quantity`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-4 sm:col-span-2">
-                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Qtd. {selectedProduct && `(${selectedProduct.unit})`}</FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.unitPrice`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-6 sm:col-span-3">
-                             <FormLabel className={index > 0 ? 'sr-only' : ''}>Custo Unit. (R$)</FormLabel>
-                            <FormControl>
-                              <Input type="number" step="0.01" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="col-span-2 sm:col-span-1">
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="col-span-2">
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.unitPrice`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <Input type="number" step="0.01" {...field} placeholder="R$ 0,00" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="col-span-2 flex items-center justify-center">
                         <Button
                           type="button"
                           variant="destructive"
                           size="icon"
                           onClick={() => remove(index)}
                           disabled={fields.length <= 1}
+                          className="h-10 w-10"
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Remover item</span>
@@ -235,7 +250,7 @@ export function NewPurchaseDialog() {
               </div>
             </ScrollArea>
 
-            <div className="flex flex-col sm:flex-row items-center gap-2">
+            <div className="flex items-center gap-2">
                 <Button
                 type="button"
                 variant="outline"
@@ -248,15 +263,21 @@ export function NewPurchaseDialog() {
             </div>
 
             <Separator />
-
-            <div className="flex justify-end items-center">
-              <span className="text-lg font-semibold">Custo Total da Compra:</span>
-              <span className="text-xl font-bold text-primary ml-4">
-                R$ {total.toFixed(2).replace('.', ',')}
-              </span>
+            
+            <div className="flex justify-between items-center">
+                <div className='flex items-center text-sm text-muted-foreground'>
+                   <User className='mr-2 h-4 w-4'/>
+                   <span>Registrado por: <strong>{profile?.name || 'N/A'}</strong></span>
+                </div>
+                <div className='flex items-center'>
+                    <span className="text-lg font-semibold">Custo Total da Compra:</span>
+                    <span className="text-xl font-bold text-primary ml-4">
+                        R$ {total.toFixed(2).replace('.', ',')}
+                    </span>
+                </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="!mt-auto pt-4">
               <Button type="submit" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Salvar Compra
