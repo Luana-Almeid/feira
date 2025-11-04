@@ -25,10 +25,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Leaf } from 'lucide-react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebase/client';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth, db } from '@/firebase/client';
 import { useUser } from '@/hooks/use-user';
 import { useRouter } from 'next/navigation';
+import { doc, getDoc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
 
 const loginSchema = z.object({
   email: z.string().email('E-mail inválido.'),
@@ -52,7 +54,34 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      
+      // Check user status in Firestore
+      const userDocRef = doc(db, 'users', userCredential.user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userProfile = userDoc.data() as UserProfile;
+        if (userProfile.status === 'inativo') {
+          await signOut(auth);
+          toast({
+            variant: 'destructive',
+            title: 'Acesso Negado',
+            description: 'Este usuário está inativo e não pode acessar o sistema.',
+          });
+          return;
+        }
+      } else {
+        // If profile doesn't exist for some reason, deny access
+        await signOut(auth);
+        toast({
+          variant: 'destructive',
+          title: 'Acesso Negado',
+          description: 'Perfil de usuário não encontrado.',
+        });
+        return;
+      }
+      
       toast({
         title: 'Bem-vindo(a) de volta!',
       });
