@@ -59,37 +59,37 @@ export function EmployeeActivityTable({ users, sortDescriptor, onSortChange }: E
             <TableHeader>
               <TableRow>
                 <TableHead>
-                  <Button variant="ghost" onClick={() => handleSort('name')}>
+                  <Button variant="ghost" onClick={() => handleSort('name')} className="px-0">
                     Nome
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" onClick={() => handleSort('email')}>
+                  <Button variant="ghost" onClick={() => handleSort('email')} className="px-0">
                     Email
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" onClick={() => handleSort('role')}>
+                  <Button variant="ghost" onClick={() => handleSort('role')} className="px-0">
                     Perfil
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" onClick={() => handleSort('status')}>
+                  <Button variant="ghost" onClick={() => handleSort('status')} className="px-0">
                     Status
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
-                  <Button variant="ghost" onClick={() => handleSort('admissionDate')}>
+                  <Button variant="ghost" onClick={() => handleSort('admissionDate')} className="px-0">
                     Data de Admissão
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
-                   <Button variant="ghost" onClick={() => handleSort('dismissalDate')}>
+                   <Button variant="ghost" onClick={() => handleSort('dismissalDate')} className="px-0">
                     Data de Demissão
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>

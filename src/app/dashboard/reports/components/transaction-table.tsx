@@ -64,26 +64,26 @@ export function TransactionTable({ title, description, transactions, sortDescrip
             <TableHeader>
               <TableRow>
                 <TableHead>
-                   <Button variant="ghost" onClick={() => handleSort('date')}>
+                   <Button variant="ghost" onClick={() => handleSort('date')} className="px-0">
                     Data
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>
-                   <Button variant="ghost" onClick={() => handleSort('userName')}>
+                   <Button variant="ghost" onClick={() => handleSort('userName')} className="px-0">
                     Responsável
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
                 <TableHead>Itens</TableHead>
                 {isAdjustment && <TableHead>
-                    <Button variant="ghost" onClick={() => handleSort('reason')}>
+                    <Button variant="ghost" onClick={() => handleSort('reason')} className="px-0">
                         Motivo
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                 </TableHead>}
                 <TableHead className="text-right">
-                    <Button variant="ghost" onClick={() => handleSort('total')}>
+                    <Button variant="ghost" onClick={() => handleSort('total')} className="px-0 w-full justify-end">
                         {isAdjustment ? 'Valor do Ajuste' : 'Valor Total'}
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
