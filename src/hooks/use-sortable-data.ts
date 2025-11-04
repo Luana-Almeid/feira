@@ -17,10 +17,12 @@ function searchInItem(item: any, searchTerm: string, keys: string[]): boolean {
         const value = get(item, key);
         if (value !== null && value !== undefined) {
              if (Array.isArray(value)) {
-                if (value.some(subItem => searchInItem(subItem, lowerCaseSearchTerm, Object.keys(subItem)))) {
+                // If the value is an array, iterate over its items and search recursively
+                if (value.some(subItem => typeof subItem === 'object' && searchInItem(subItem, lowerCaseSearchTerm, Object.keys(subItem)))) {
                     return true;
                 }
             } else if (typeof value === 'object' && !(value instanceof Timestamp) && !(value instanceof Date)) {
+                // If it's a nested object, search recursively
                 if (searchInItem(value, lowerCaseSearchTerm, Object.keys(value))) {
                     return true;
                 }
