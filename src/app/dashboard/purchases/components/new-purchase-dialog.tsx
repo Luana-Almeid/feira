@@ -166,7 +166,7 @@ export function NewPurchaseDialog() {
             <ScrollArea className="flex-grow">
               <div className="space-y-4 py-2">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 gap-x-4 items-start px-1">
+                  <div key={field.id} className="grid grid-cols-12 gap-x-4 items-center px-1">
                     <div className="col-span-6">
                       <FormField
                         control={form.control}
@@ -227,7 +227,7 @@ export function NewPurchaseDialog() {
                       />
                     </div>
                     <div className="col-span-2 flex items-center justify-end">
-                       <div className="mt-8">
+                       <div className="pt-2">
                          <Button
                             type="button"
                             variant="destructive"
