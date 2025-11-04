@@ -147,7 +147,7 @@ export function NewPurchaseDialog() {
           Registrar Compra
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-4xl flex flex-col h-[90vh] sm:h-auto sm:max-h-[90vh]">
+      <DialogContent className="sm:max-w-4xl flex flex-col h-full sm:h-auto sm:max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Registrar Nova Compra</DialogTitle>
           <DialogDescription>
@@ -163,10 +163,10 @@ export function NewPurchaseDialog() {
               <div className="col-span-2"><Label>Custo Unit. (R$)</Label></div>
             </div>
 
-            <ScrollArea className="flex-grow">
+            <ScrollArea className="flex-grow p-1">
               <div className="space-y-4 py-2">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 gap-x-4 items-center px-1">
+                  <div key={field.id} className="grid grid-cols-12 gap-x-4 items-start px-1">
                     <div className="col-span-6">
                       <FormField
                         control={form.control}
@@ -227,7 +227,7 @@ export function NewPurchaseDialog() {
                       />
                     </div>
                     <div className="col-span-2 flex items-center justify-end">
-                       <div className="pt-2">
+                       <div className="mt-8">
                          <Button
                             type="button"
                             variant="destructive"
