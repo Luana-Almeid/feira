@@ -15,6 +15,7 @@ import { useSortableData, type SortDescriptor } from '@/hooks/use-sortable-data'
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ActivityChart } from './activity-chart';
 
 const searchKeysMap = {
   sales: ['userName', 'items.productName', 'total'],
@@ -27,36 +28,40 @@ const TabContent = ({
   data, 
   type, 
   searchTerm, 
-  sortDescriptor, 
-  onSortChange 
 }: { 
   data: any[], 
   type: keyof typeof searchKeysMap, 
   searchTerm: string, 
-  sortDescriptor: SortDescriptor | null, 
-  onSortChange: (descriptor: SortDescriptor) => void 
 }) => {
-  
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | null>(null);
   const { sortedData } = useSortableData(data, sortDescriptor, searchTerm, searchKeysMap[type]);
   
-  switch(type) {
-    case 'sales':
-      return <TransactionTable title="Histórico de Vendas" description="Todas as vendas registradas." transactions={sortedData as Transaction[]} sortDescriptor={sortDescriptor} onSortChange={onSortChange} />;
-    case 'purchases':
-      return <TransactionTable title="Histórico de Compras" description="Todas as compras de fornecedores." transactions={sortedData as Transaction[]} sortDescriptor={sortDescriptor} onSortChange={onSortChange} />;
-    case 'adjustments':
-      return <TransactionTable title="Histórico de Ajustes e Descartes" description="Entradas e saídas manuais do estoque." transactions={sortedData as Transaction[]} sortDescriptor={sortDescriptor} onSortChange={onSortChange} />;
-    case 'employees':
-      return <EmployeeActivityTable users={sortedData as UserProfile[]} sortDescriptor={sortDescriptor} onSortChange={onSortChange} />;
-    default:
-      return null;
+  const renderTable = () => {
+    switch(type) {
+      case 'sales':
+        return <TransactionTable title="Histórico de Vendas" description="Todas as vendas registradas." transactions={sortedData as Transaction[]} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />;
+      case 'purchases':
+        return <TransactionTable title="Histórico de Compras" description="Todas as compras de fornecedores." transactions={sortedData as Transaction[]} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />;
+      case 'adjustments':
+        return <TransactionTable title="Histórico de Ajustes e Descartes" description="Entradas e saídas manuais do estoque." transactions={sortedData as Transaction[]} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />;
+      case 'employees':
+        return <EmployeeActivityTable users={sortedData as UserProfile[]} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />;
+      default:
+        return null;
+    }
   }
+
+  return (
+    <div className='space-y-4'>
+      {renderTable()}
+      <ActivityChart data={sortedData} type={type} />
+    </div>
+  )
 }
 
 export function ReportsClient() {
   const [activeTab, setActiveTab] = useState('sales');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | null>(null);
 
   const transactionsQuery = useMemo(() => query(collection(db, 'transactions'), orderBy('date', 'desc')), []);
   const usersQuery = useMemo(() => query(collection(db, 'users'), orderBy('name')), []);
@@ -70,6 +75,11 @@ export function ReportsClient() {
   const purchases = useMemo(() => transactions.filter(t => t.type === 'Compra'), [transactions]);
   const adjustments = useMemo(() => transactions.filter(t => t.type === 'Descarte'), [transactions]);
   
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchTerm('');
+  };
+
   const currentData = useMemo(() => {
     switch(activeTab) {
       case 'sales': return sales;
@@ -79,14 +89,6 @@ export function ReportsClient() {
       default: return [];
     }
   }, [activeTab, sales, purchases, adjustments, users]);
-  
-  const { sortedData } = useSortableData(currentData, sortDescriptor, searchTerm, searchKeysMap[activeTab as keyof typeof searchKeysMap]);
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setSearchTerm('');
-    setSortDescriptor(null);
-  };
   
   const formatDateForExport = (dateValue: string | Date | Timestamp | null | undefined): string => {
     if (!dateValue) return 'N/A';
@@ -103,7 +105,7 @@ export function ReportsClient() {
   }
 
   const handleExportCSV = () => {
-    if (!sortedData.length) return;
+    if (!currentData.length) return;
 
     let headers: string[] = [];
     let data: any[][] = [];
@@ -111,7 +113,7 @@ export function ReportsClient() {
 
     if (activeTab === 'employees') {
         headers = ['Nome', 'Email', 'CPF', 'Perfil', 'Status', 'Data de Admissão', 'Data de Demissão'];
-        data = (sortedData as UserProfile[]).map(user => [
+        data = (currentData as UserProfile[]).map(user => [
             user.name,
             user.email,
             user.cpf,
@@ -123,7 +125,7 @@ export function ReportsClient() {
     } else {
         const isAdjustment = activeTab === 'adjustments';
         headers = ['Data', 'Responsável', 'Itens', ...(isAdjustment ? ['Motivo'] : []), isAdjustment ? 'Valor do Ajuste' : 'Valor Total'];
-        data = (sortedData as Transaction[]).map(tx => [
+        data = (currentData as Transaction[]).map(tx => [
             formatDateForExport(tx.date),
             tx.userName,
             tx.items.map(i => `${i.quantity}x ${i.productName}`).join('; '),
@@ -169,7 +171,7 @@ export function ReportsClient() {
                     <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
                     <TabsTrigger value="employees">Funcionários</TabsTrigger>
                 </TabsList>
-                 <Button variant="outline" onClick={handleExportCSV} disabled={sortedData.length === 0}>
+                 <Button variant="outline" onClick={handleExportCSV} disabled={currentData.length === 0}>
                     <FileDown className="mr-2 h-4 w-4" />
                     Exportar
                 </Button>
@@ -186,21 +188,19 @@ export function ReportsClient() {
                 />
             </div>
             
-            <TabsContent value="sales">
-                <TabContent data={sales} type="sales" searchTerm={searchTerm} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />
+            <TabsContent value="sales" key="sales">
+                <TabContent data={sales} type="sales" searchTerm={searchTerm} />
             </TabsContent>
-            <TabsContent value="purchases">
-                <TabContent data={purchases} type="purchases" searchTerm={searchTerm} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />
+            <TabsContent value="purchases" key="purchases">
+                <TabContent data={purchases} type="purchases" searchTerm={searchTerm} />
             </TabsContent>
-            <TabsContent value="adjustments">
-                <TabContent data={adjustments} type="adjustments" searchTerm={searchTerm} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />
+            <TabsContent value="adjustments" key="adjustments">
+                <TabContent data={adjustments} type="adjustments" searchTerm={searchTerm} />
             </TabsContent>
-            <TabsContent value="employees">
-                <TabContent data={users} type="employees" searchTerm={searchTerm} sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor} />
+            <TabsContent value="employees" key="employees">
+                <TabContent data={users} type="employees" searchTerm={searchTerm} />
             </TabsContent>
         </Tabs>
     </div>
   );
 }
-
-    
