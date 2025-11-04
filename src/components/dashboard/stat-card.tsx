@@ -5,7 +5,7 @@ type StatCardProps = {
   title: string;
   value: string | number;
   icon: LucideIcon;
-  description?: string;
+  description?: React.ReactNode;
 };
 
 export function StatCard({ title, value, icon: Icon, description }: StatCardProps) {
@@ -18,7 +18,7 @@ export function StatCard({ title, value, icon: Icon, description }: StatCardProp
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
         {description && (
-          <CardDescription>{description}</CardDescription>
+          <p className="text-xs text-muted-foreground">{description}</p>
         )}
       </CardContent>
     </Card>

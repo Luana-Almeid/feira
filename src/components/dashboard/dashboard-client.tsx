@@ -6,8 +6,8 @@ import { useCollection } from '@/hooks/use-collection';
 import { collection, query, where, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type Transaction, type Product, type UserProfile } from '@/lib/types';
-import { Loader2, DollarSign, Users, Package, TrendingUp, TrendingDown, Wrench, Ban, AlertTriangle, BarChart, ArrowUp, ArrowDown } from 'lucide-react';
-import { startOfMonth, startOfDay } from 'date-fns';
+import { Loader2, DollarSign, Users, Package, TrendingUp, TrendingDown, Wrench, Ban, AlertTriangle, BarChart, ArrowUp, ArrowDown, PackageCheck } from 'lucide-react';
+import { startOfMonth, startOfDay, subDays } from 'date-fns';
 import { StatCard } from './stat-card';
 import { SalesChart } from './sales-chart';
 import { LowStockProducts } from './low-stock-products';
@@ -16,6 +16,7 @@ import { HighlightCard } from './highlight-card';
 export function DashboardClient() {
   const lastMonth = useMemo(() => startOfMonth(new Date()), []);
   const todayStart = useMemo(() => startOfDay(new Date()), []);
+  const yesterdayStart = useMemo(() => startOfDay(subDays(new Date(), 1)), []);
   
   const transactionsQuery = useMemo(() => 
     query(collection(db, 'transactions'), where('date', '>=', lastMonth), orderBy('date', 'desc'))
@@ -32,23 +33,29 @@ export function DashboardClient() {
 
   const {
     salesToday,
-    transactionsToday,
+    salesYesterday,
     activeEmployees,
     inactiveEmployees,
     totalProducts,
+    totalItemsInStock,
+    lowStockCount,
     productOfTheDay,
     productOfTheMonth,
     leastSoldProductMonth,
     mostAdjustedProduct,
   } = useMemo(() => {
     // Filter transactions for different periods
-    const todaySales = transactions.filter(t => t.type === 'Venda' && (t.date as Timestamp).toDate() >= todayStart);
+    const todaySalesTx = transactions.filter(t => t.type === 'Venda' && (t.date as Timestamp).toDate() >= todayStart);
+    const yesterdaySalesTx = transactions.filter(t => {
+      const date = (t.date as Timestamp).toDate();
+      return t.type === 'Venda' && date >= yesterdayStart && date < todayStart;
+    });
     const monthSales = transactions.filter(t => t.type === 'Venda');
     const monthAdjustments = transactions.filter(t => t.type === 'Descarte');
 
     // Sales stats
-    const salesToday = todaySales.reduce((acc, sale) => acc + sale.total, 0);
-    const transactionsToday = todaySales.length;
+    const salesToday = todaySalesTx.reduce((acc, sale) => acc + sale.total, 0);
+    const salesYesterday = yesterdaySalesTx.reduce((acc, sale) => acc + sale.total, 0);
 
     // Employee stats
     const activeEmployees = users.filter(u => u.status === 'ativo').length;
@@ -56,6 +63,8 @@ export function DashboardClient() {
 
     // Product stats
     const totalProducts = products.length;
+    const totalItemsInStock = products.reduce((acc, p) => acc + p.stock, 0);
+    const lowStockCount = products.filter(p => p.stock <= p.lowStockThreshold).length;
 
     // Most sold product logic
     const getMostSold = (sales: Transaction[]) => {
@@ -134,16 +143,25 @@ export function DashboardClient() {
 
     return {
       salesToday,
-      transactionsToday,
+      salesYesterday,
       activeEmployees,
       inactiveEmployees,
       totalProducts,
-      productOfTheDay: getMostSold(todaySales),
+      totalItemsInStock,
+      lowStockCount,
+      productOfTheDay: getMostSold(todaySalesTx),
       productOfTheMonth: getMostSold(monthSales),
       leastSoldProductMonth: getLeastSoldMonth(monthSales, products),
       mostAdjustedProduct: getMostAdjusted(monthAdjustments, products),
     };
-  }, [transactions, products, users, todayStart]);
+  }, [transactions, products, users, todayStart, yesterdayStart]);
+
+  const salesPercentageChange = useMemo(() => {
+    if (salesYesterday === 0) {
+      return salesToday > 0 ? 100 : 0;
+    }
+    return ((salesToday - salesYesterday) / salesYesterday) * 100;
+  }, [salesToday, salesYesterday]);
 
 
   if (loading) {
@@ -158,28 +176,37 @@ export function DashboardClient() {
     <div className="flex flex-col gap-4 md:gap-8">
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
-          title="Vendas (Hoje)"
+          title="Vendas (hoje)"
           value={`R$ ${salesToday.toFixed(2).replace('.', ',')}`}
           icon={DollarSign}
-          description={`${transactionsToday} transações hoje`}
+          description={
+            salesYesterday > 0 ? (
+              <>
+                <span className={salesPercentageChange >= 0 ? "text-primary" : "text-destructive"}>
+                  {salesPercentageChange >= 0 ? `+${salesPercentageChange.toFixed(1)}%` : `${salesPercentageChange.toFixed(1)}%`}
+                </span>
+                <span className='ml-1'>em relação a ontem</span>
+              </>
+            ) : "Nenhuma venda ontem"
+          }
         />
         <StatCard
-          title="Produtos em Estoque"
-          value={totalProducts}
-          icon={Package}
-          description="Itens diferentes cadastrados"
+          title="Itens em Estoque"
+          value={totalItemsInStock}
+          icon={PackageCheck}
+          description={`${totalProducts} produtos diferentes`}
+        />
+         <StatCard
+          title="Estoque Baixo"
+          value={lowStockCount}
+          icon={AlertTriangle}
+          description="Itens precisando de atenção"
         />
         <StatCard
           title="Funcionários Ativos"
           value={activeEmployees}
           icon={Users}
           description={`${inactiveEmployees} funcionários inativos`}
-        />
-        <StatCard
-            title="Funcionários Inativos"
-            value={inactiveEmployees}
-            icon={Ban}
-            description="Total de funcionários demitidos"
         />
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
