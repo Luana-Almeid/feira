@@ -10,11 +10,6 @@ export type SortDescriptor = {
   direction: 'ascending' | 'descending';
 };
 
-// Helper function to safely get nested properties
-const getNestedValue = (obj: any, path: string) => {
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
-};
-
 export function useSortableData<T>(
   data: T[],
   sortDescriptor: SortDescriptor | null,
@@ -55,7 +50,10 @@ export function useSortableData<T>(
         } else if (typeof aValue === 'number' && typeof bValue === 'number') {
             comparison = aValue - bValue;
         } else {
-            comparison = String(aValue).localeCompare(String(bValue), 'pt-BR', { numeric: true });
+            // Treat null or undefined values as empty strings for sorting
+            const strA = aValue === null || aValue === undefined ? '' : String(aValue);
+            const strB = bValue === null || bValue === undefined ? '' : String(bValue);
+            comparison = strA.localeCompare(strB, 'pt-BR', { numeric: true });
         }
 
         return sortDescriptor.direction === 'ascending' ? comparison : -comparison;
