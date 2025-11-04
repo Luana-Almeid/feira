@@ -193,16 +193,16 @@ export function NewPurchaseDialog() {
               <div className="col-span-3"><Label>Custo (R$)</Label></div>
             </div>
 
-            <ScrollArea className="flex-grow">
+            <ScrollArea className="flex-grow pr-3">
               <div className="space-y-4 p-1">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 items-start gap-x-4">
+                  <div key={field.id} className="grid grid-cols-12 items-center gap-x-4">
                     <div className="col-span-6">
                       <FormField
                         control={form.control}
                         name={`items.${index}.productId`}
                         render={({ field }) => (
-                          <FormItem className="min-h-[72px]">
+                          <FormItem>
                             <Select
                               onValueChange={(value) => {
                                 field.onChange(value);
@@ -233,7 +233,7 @@ export function NewPurchaseDialog() {
                         control={form.control}
                         name={`items.${index}.quantity`}
                         render={({ field }) => (
-                          <FormItem className="min-h-[72px]">
+                          <FormItem>
                             <FormControl>
                               <Input 
                                 placeholder="0" 
@@ -251,7 +251,7 @@ export function NewPurchaseDialog() {
                         control={form.control}
                         name={`items.${index}.unitPrice`}
                         render={({ field }) => (
-                          <FormItem className="min-h-[72px]">
+                          <FormItem>
                             <FormControl>
                               <Input 
                                 placeholder="R$ 0,00" 
@@ -267,7 +267,7 @@ export function NewPurchaseDialog() {
                         )}
                       />
                     </div>
-                    <div className="col-span-1 flex items-center mt-8">
+                    <div className="col-span-1 flex items-center justify-center">
                          <Button
                             type="button"
                             variant="destructive"
