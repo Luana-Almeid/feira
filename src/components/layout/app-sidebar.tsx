@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
   Sidebar,
   SidebarContent,
@@ -25,10 +25,13 @@ import {
   Leaf,
   ChevronLeft,
   Users,
+  KeyRound,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
 import { Skeleton } from '../ui/skeleton';
+import { useState } from 'react';
+import { ResetPasswordDialog } from '../auth/reset-password-dialog';
 
 const menuItems = [
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
@@ -43,6 +46,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const { user, profile, loading } = useUser();
   const pathname = usePathname();
+  const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
 
   const filteredMenuItems = menuItems.filter(item => 
     profile?.role && item.roles.includes(profile.role)
@@ -56,6 +60,7 @@ export function AppSidebar() {
   }
 
   return (
+    <>
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2">
@@ -106,6 +111,16 @@ export function AppSidebar() {
               </span>
             </div>
           </div>
+          <SidebarMenuItem>
+             <SidebarMenuButton
+                tooltip="Redefinir Senha"
+                className="w-full"
+                onClick={() => setIsResetPasswordOpen(true)}
+              >
+                <KeyRound />
+                <span>Redefinir Senha</span>
+              </SidebarMenuButton>
+          </SidebarMenuItem>
         <SidebarTrigger>
           <Button variant="ghost" className="w-full justify-center">
               <span className="flex items-center justify-center">
@@ -116,6 +131,8 @@ export function AppSidebar() {
         </SidebarTrigger>
       </SidebarFooter>
     </Sidebar>
+    <ResetPasswordDialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen} />
+    </>
   );
 }
 
