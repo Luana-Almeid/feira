@@ -45,8 +45,8 @@ import { useUser } from '@/hooks/use-user';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
-  quantity: z.coerce.number({invalid_type_error: "Apenas números."}).int("A quantidade deve ser um número inteiro.").min(1, "A quantidade mínima é 1."),
-  unitPrice: z.coerce.number().min(0.01, "O preço deve ser maior que zero.")
+  quantity: z.coerce.number({invalid_type_error: "Inválido"}).int("Inválido").min(1, "Mínimo 1."),
+  unitPrice: z.coerce.number().min(0.01, "Preço inválido.")
 });
 
 const saleSchema = z.object({
@@ -195,17 +195,21 @@ export function NewSaleDialog() {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-12 gap-x-2 sm:gap-x-4">
+              <div className="col-span-5"><Label>Produto</Label></div>
+              <div className="col-span-2"><Label>Qtd.</Label></div>
+              <div className="col-span-4 sm:col-span-3"><Label>Preço Unit. (R$)</Label></div>
+            </div>
             <ScrollArea className="h-72 w-full">
               <div className="space-y-4 pr-4">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="flex items-start gap-x-2">
-                      <div className="flex-1">
-                          {index === 0 && <Label className="mb-2 block">Produto</Label>}
+                  <div key={field.id} className="grid grid-cols-12 gap-x-2 sm:gap-x-4 items-center">
+                      <div className='col-span-5'>
                           <FormField
                             control={form.control}
                             name={`items.${index}.productId`}
                             render={({ field }) => (
-                              <FormItem className='h-14'>
+                              <FormItem>
                                 <Select
                                   onValueChange={(value) => {
                                     field.onChange(value);
@@ -215,13 +219,13 @@ export function NewSaleDialog() {
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione um produto"} />
+                                      <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione"} />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
                                     {products.map((product) => (
                                       <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
-                                        {product.name} {product.stock <= 0 && '(Sem estoque)'}
+                                        {product.name} {product.stock <= 0 && '(S/ Estoque)'}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -231,13 +235,12 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <div className="w-20">
-                         {index === 0 && <Label className="mb-2 block">Qtd.</Label>}
+                      <div className="col-span-2">
                          <FormField
                             control={form.control}
                             name={`items.${index}.quantity`}
                             render={({ field }) => (
-                              <FormItem className='h-14'>
+                              <FormItem>
                                 <FormControl>
                                   <Input 
                                     placeholder="0" 
@@ -250,13 +253,12 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <div className="w-40">
-                          {index === 0 && <Label className="mb-2 block">Preço Unit. (R$)</Label>}
+                      <div className="col-span-4 sm:col-span-3">
                           <FormField
                             control={form.control}
                             name={`items.${index}.unitPrice`}
                             render={({ field }) => (
-                              <FormItem className='h-14'>
+                              <FormItem>
                                 <FormControl>
                                   <Input 
                                     placeholder="R$ 0,00" 
@@ -272,14 +274,13 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <div className="flex h-full items-center">
+                      <div className="col-span-1">
                         <Button
                           type="button"
                           variant="destructive"
                           size="icon"
                           onClick={() => remove(index)}
                           disabled={fields.length <= 1}
-                          className="mt-8"
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Remover item</span>
@@ -326,3 +327,5 @@ export function NewSaleDialog() {
     </Dialog>
   );
 }
+
+    
