@@ -163,10 +163,10 @@ export function NewPurchaseDialog() {
               <div className="col-span-2"><Label>Custo Unit. (R$)</Label></div>
             </div>
 
-            <ScrollArea className="flex-grow p-1">
-              <div className="space-y-4">
+            <ScrollArea className="flex-grow">
+              <div className="space-y-4 py-2">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 gap-x-4 items-start">
+                  <div key={field.id} className="grid grid-cols-12 gap-x-4 items-start px-1">
                     <div className="col-span-6">
                       <FormField
                         control={form.control}
