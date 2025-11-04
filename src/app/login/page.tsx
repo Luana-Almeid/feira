@@ -38,7 +38,7 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { user } = useUser();
+  const { user, loading: userLoading } = useUser();
   const router = useRouter();
 
   const form = useForm<z.infer<typeof loginSchema>>({
@@ -59,8 +59,7 @@ export default function LoginPage() {
       // O redirecionamento será tratado pelo AuthProvider
     } catch (error: any) {
       let errorMessage = 'Ocorreu um erro ao tentar fazer login.';
-      // https://firebase.google.com/docs/auth/admin/errors
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+      if (error.code === 'auth/invalid-credential') {
         errorMessage = 'E-mail ou senha inválidos.';
       }
       toast({
@@ -73,9 +72,14 @@ export default function LoginPage() {
     }
   }
 
-  if (user) {
-    router.push('/dashboard');
-    return null;
+  // Se o usuário já estiver logado ou carregando, não exibe o formulário
+  // para evitar piscar a tela enquanto o AuthProvider redireciona.
+  if (userLoading || user) {
+     return (
+       <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (

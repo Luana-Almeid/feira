@@ -15,12 +15,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && user && pathname === '/login') {
-      // Se o usuário está logado e na página de login, redireciona
-      if (profile?.role === 'administrador') {
-        router.replace('/dashboard');
-      } else {
-        router.replace('/dashboard/inventory');
+    if (loading) {
+      return; // Aguarda a verificação de autenticação terminar
+    }
+
+    const isAuthPage = pathname === '/login';
+
+    if (user) {
+      // Usuário está logado
+      if (isAuthPage) {
+        // Se estiver na página de login, redireciona para a página apropriada
+        if (profile?.role === 'administrador') {
+          router.replace('/dashboard');
+        } else {
+          router.replace('/dashboard/inventory');
+        }
+      }
+    } else {
+      // Usuário não está logado
+      if (!isAuthPage) {
+        // Se não estiver na página de login, redireciona para ela
+        router.replace('/login');
       }
     }
   }, [user, profile, loading, router, pathname]);
@@ -33,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
   
-  // Se não estiver logado e não estiver na página de login, não renderiza nada (o hook useUser já redireciona)
+  // Se não estiver logado e não estiver na página de login, mostra um loader enquanto redireciona
   if (!user && pathname !== '/login') {
     return (
        <div className="flex h-screen w-full items-center justify-center">
