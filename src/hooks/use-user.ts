@@ -15,28 +15,40 @@ export function useUser() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock user for development without login
-    const mockUser = {
-      uid: 'mock-user-id',
-      email: 'admin@excelenciafrutas.com',
-      displayName: 'Admin',
-    } as User;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      if (!user) {
+        setProfile(null);
+        setLoading(false);
+      }
+    });
 
-    const mockProfile: UserProfile = {
-        uid: 'mock-user-id',
-        name: 'Admin',
-        email: 'admin@excelenciafrutas.com',
-        cpf: '000.000.000-00',
-        role: 'administrador',
-        status: 'ativo',
-        admissionDate: new Date().toISOString(),
-    }
-    
-    setUser(mockUser);
-    setProfile(mockProfile);
-    setLoading(false);
-
+    return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      // Listen to the user's profile document in Firestore
+      const unsubProfile = onSnapshot(
+        doc(db, 'users', user.uid),
+        (docSnap) => {
+          if (docSnap.exists()) {
+            setProfile(docSnap.data() as UserProfile);
+          } else {
+            // Handle case where user exists in Auth but not in Firestore
+            setProfile(null);
+          }
+          setLoading(false);
+        },
+        (error) => {
+          console.error("Error fetching user profile:", error);
+          setProfile(null);
+          setLoading(false);
+        }
+      );
+      return () => unsubProfile();
+    }
+  }, [user]);
 
   return { user, profile, loading };
 }

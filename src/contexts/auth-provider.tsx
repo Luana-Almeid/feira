@@ -60,6 +60,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If none of the conditions are met (e.g., redirecting), return null
-  return null;
+  // If none of the conditions are met (e.g., redirecting), show a loader while redirecting
+  return (
+    <div className="flex h-screen w-full items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
 }
