@@ -163,8 +163,8 @@ export function NewPurchaseDialog() {
               <div className="col-span-2"><Label>Custo Unit. (R$)</Label></div>
             </div>
 
-            <ScrollArea className="flex-grow p-1">
-              <div className="space-y-4">
+            <ScrollArea className="flex-grow p-1 -mx-1">
+              <div className="space-y-4 px-1">
                 {fields.map((field, index) => (
                   <div key={field.id} className="grid grid-cols-12 gap-x-4 items-start">
                     <div className="col-span-6">
@@ -172,7 +172,7 @@ export function NewPurchaseDialog() {
                         control={form.control}
                         name={`items.${index}.productId`}
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="min-h-[72px]">
                             <Select
                               onValueChange={(value) => {
                                 field.onChange(value);
@@ -203,7 +203,7 @@ export function NewPurchaseDialog() {
                         control={form.control}
                         name={`items.${index}.quantity`}
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="min-h-[72px]">
                             <FormControl>
                               <Input type="number" {...field} placeholder="0" />
                             </FormControl>
@@ -217,7 +217,7 @@ export function NewPurchaseDialog() {
                         control={form.control}
                         name={`items.${index}.unitPrice`}
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="min-h-[72px]">
                             <FormControl>
                               <Input type="number" step="0.01" {...field} placeholder="R$ 0,00" />
                             </FormControl>
