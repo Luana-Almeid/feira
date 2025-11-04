@@ -34,12 +34,6 @@ type TransactionTableProps = {
 };
 
 export function TransactionTable({ title, description, transactions, sortDescriptor, onSortChange }: TransactionTableProps) {
-  const formatItems = (items: Transaction['items']) => {
-    if (!items || items.length === 0) return 'N/A';
-    if (items.length === 1) return `${items[0].quantity}x ${items[0].productName}`;
-    return `${items.length} itens`;
-  };
-
   const isAdjustment = transactions[0]?.type === 'Descarte';
 
   const handleSort = (key: string) => {
@@ -108,7 +102,15 @@ export function TransactionTable({ title, description, transactions, sortDescrip
                         })}
                     </TableCell>
                     <TableCell>{transaction.userName}</TableCell>
-                    <TableCell>{formatItems(transaction.items)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        {transaction.items.map((item, index) => (
+                          <span key={index} className="text-sm">
+                            {item.quantity}x {item.productName}
+                          </span>
+                        ))}
+                      </div>
+                    </TableCell>
                     {isAdjustment && <TableCell>{transaction.reason}</TableCell>}
                     <TableCell className={cn("text-right font-medium", totalIsNegative ? 'text-destructive' : 'text-primary')}>
                         {totalIsNegative ? '-' : ''} R$ {Math.abs(transaction.total).toFixed(2).replace('.', ',')}
