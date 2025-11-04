@@ -38,12 +38,30 @@ export function useUser() {
       const unsubProfile = onSnapshot(
         doc(db, 'users', user.uid),
         (docSnap) => {
+          let userProfile: UserProfile | null = null;
           if (docSnap.exists()) {
-            setProfile(docSnap.data() as UserProfile);
-          } else {
-            // Handle case where user exists in Auth but not in Firestore
-            setProfile(null);
+            userProfile = docSnap.data() as UserProfile;
           }
+
+          // Force admin role for specific user
+          if (user.email === 'luanasoaressw@gmail.com') {
+             if (userProfile) {
+                userProfile.role = 'administrador';
+            } else {
+                // If profile doesn't exist for the owner, create a temporary one.
+                userProfile = {
+                    uid: user.uid,
+                    name: user.displayName || 'Admin',
+                    email: user.email,
+                    cpf: '000.000.000-00',
+                    role: 'administrador',
+                    status: 'ativo',
+                    admissionDate: new Date(),
+                };
+            }
+          }
+
+          setProfile(userProfile);
           // Now that we have the profile (or know it doesn't exist), we can stop loading.
           setLoading(false);
         },
