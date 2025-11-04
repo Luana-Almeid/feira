@@ -15,20 +15,26 @@ export function useUser() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      if (!user) {
+    const unsubscribeAuth = onAuthStateChanged(auth, (userAuth) => {
+      if (userAuth) {
+        setUser(userAuth);
+        // Profile fetching will be handled in the next useEffect
+        // Loading will be set to false there
+      } else {
+        // No user, so we can stop loading
+        setUser(null);
         setProfile(null);
         setLoading(false);
       }
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
 
   useEffect(() => {
     if (user) {
-      // Listen to the user's profile document in Firestore
+      // If there's a user, we start listening to their profile.
+      // Loading remains true until the profile is fetched.
       const unsubProfile = onSnapshot(
         doc(db, 'users', user.uid),
         (docSnap) => {
@@ -38,12 +44,13 @@ export function useUser() {
             // Handle case where user exists in Auth but not in Firestore
             setProfile(null);
           }
+          // Now that we have the profile (or know it doesn't exist), we can stop loading.
           setLoading(false);
         },
         (error) => {
           console.error("Error fetching user profile:", error);
           setProfile(null);
-          setLoading(false);
+          setLoading(false); // Stop loading even if there's an error
         }
       );
       return () => unsubProfile();
