@@ -25,14 +25,10 @@ import {
   Leaf,
   ChevronLeft,
   Users,
-  LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/hooks/use-user';
 import { Skeleton } from '../ui/skeleton';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/firebase/client';
-import { useToast } from '@/hooks/use-toast';
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador'] },
@@ -47,14 +43,6 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const { user, profile, loading } = useUser();
   const pathname = usePathname();
-  const router = useRouter();
-  const { toast } = useToast();
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    toast({ title: "Você saiu!", description: "Até a próxima!" });
-    router.push('/login'); 
-  }
 
   const filteredMenuItems = menuItems.filter(item => 
     profile?.role && item.roles.includes(profile.role)
@@ -118,18 +106,6 @@ export function AppSidebar() {
               </span>
             </div>
           </div>
-          <SidebarMenu>
-            <SidebarMenuItem>
-                <SidebarMenuButton
-                tooltip="Sair"
-                className="w-full"
-                onClick={handleLogout}
-                >
-                <LogOut />
-                <span>Sair</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-        </SidebarMenu>
         <SidebarTrigger>
           <Button variant="ghost" className="w-full justify-center">
               <span className="flex items-center justify-center">
