@@ -118,6 +118,7 @@ export function SalesHistory() {
               <TableRow>
                 <TableHead className="hidden sm:table-cell w-[120px]">ID da Venda</TableHead>
                 <TableHead>Data</TableHead>
+                <TableHead>Responsável</TableHead>
                 <TableHead>Itens</TableHead>
                 <TableHead className="text-right">Total</TableHead>
                 <TableHead className="w-[60px] text-right">Ações</TableHead>
@@ -126,14 +127,14 @@ export function SalesHistory() {
             <TableBody>
               {loading && (
                 <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
+                    <TableCell colSpan={6} className="text-center h-24">
                         <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary"/>
                     </TableCell>
                 </TableRow>
               )}
               {!loading && sales.length === 0 && (
                 <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
+                    <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">
                         Nenhuma venda registrada.
                     </TableCell>
                 </TableRow>
@@ -148,6 +149,7 @@ export function SalesHistory() {
                       locale: ptBR,
                     })}
                   </TableCell>
+                  <TableCell className="font-medium">{sale.userName}</TableCell>
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">
