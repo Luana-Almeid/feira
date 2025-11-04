@@ -10,25 +10,32 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import { Header } from '@/components/layout/header';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useUser();
+  const { user, profile, loading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    // If loading, don't do anything
+    // If loading, don't do anything yet.
     if (loading) return;
     
-    // If not logged in and not on the login page, redirect to login
-    if (!user && pathname !== '/login') {
+    const isLoginPage = pathname === '/login';
+
+    // If there's no user and they aren't on the login page, redirect them.
+    if (!user && !isLoginPage) {
       router.push('/login');
+      return;
     }
 
-    // If logged in and on the login page, redirect to dashboard
-    if (user && pathname === '/login') {
-      router.push('/dashboard/inventory');
+    // If there is a user and a profile, handle role-based redirects.
+    if (user && profile && isLoginPage) {
+      if (profile.role === 'administrador') {
+        router.push('/dashboard');
+      } else {
+        router.push('/dashboard/inventory');
+      }
     }
 
-  }, [user, loading, router, pathname]);
+  }, [user, profile, loading, router, pathname]);
 
   if (loading) {
     return (
@@ -60,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If none of the conditions are met (e.g., redirecting), show a loader while redirecting
+  // If none of the conditions are met (e.g., waiting for initial redirect), show a loader.
   return (
     <div className="flex h-screen w-full items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
