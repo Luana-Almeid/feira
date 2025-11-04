@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, User } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
@@ -196,9 +196,9 @@ export function NewSaleDialog() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <ScrollArea className="h-72 w-full">
-              <div className="space-y-4 pr-4">
+              <div className="space-y-8 pr-4">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 gap-x-2 gap-y-1 items-end">
+                  <div key={field.id} className="grid grid-cols-12 gap-x-2 items-start">
                       <div className="col-span-12 sm:col-span-5">
                           {index === 0 && <Label>Produto</Label>}
                           <FormField
@@ -272,7 +272,7 @@ export function NewSaleDialog() {
                             )}
                           />
                       </div>
-                      <div className="col-span-1 self-center">
+                      <div className="col-span-1 self-center mt-1">
                         <Button
                           type="button"
                           variant="destructive"
@@ -300,11 +300,17 @@ export function NewSaleDialog() {
             
             <Separator />
 
-            <div className="flex justify-end items-center">
-                <span className="text-lg font-semibold">Total da Venda:</span>
-                <span className="text-xl font-bold text-primary ml-4">
-                    R$ {total.toFixed(2).replace('.', ',')}
-                </span>
+            <div className="flex justify-between items-center">
+                <div className='flex items-center text-sm text-muted-foreground'>
+                   <User className='mr-2 h-4 w-4'/>
+                   <span>Vendedor: <strong>{profile?.name || 'N/A'}</strong></span>
+                </div>
+                <div className='flex items-center'>
+                    <span className="text-lg font-semibold">Total da Venda:</span>
+                    <span className="text-xl font-bold text-primary ml-4">
+                        R$ {total.toFixed(2).replace('.', ',')}
+                    </span>
+                </div>
             </div>
 
             <DialogFooter>
