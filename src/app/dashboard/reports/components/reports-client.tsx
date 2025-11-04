@@ -33,7 +33,7 @@ const TabContent = ({
   type: keyof typeof searchKeysMap, 
   searchTerm: string, 
 }) => {
-  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | null>(null);
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | null>({ key: 'date', direction: 'descending' });
   
   const searchKeys = searchKeysMap[type];
   const { sortedData } = useSortableData(data, sortDescriptor, searchTerm, searchKeys);
@@ -166,8 +166,8 @@ export function ReportsClient() {
   return (
     <div className="space-y-4">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <div className="flex justify-between items-center mb-4">
-                <TabsList className="grid w-full grid-cols-4">
+            <div className="flex justify-between items-center mb-4 gap-4">
+                <TabsList className="grid grid-cols-4">
                     <TabsTrigger value="sales">Vendas</TabsTrigger>
                     <TabsTrigger value="purchases">Compras</TabsTrigger>
                     <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
