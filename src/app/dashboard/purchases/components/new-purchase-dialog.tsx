@@ -163,10 +163,9 @@ export function NewPurchaseDialog() {
               <div className="col-span-2"><Label>Custo Unit. (R$)</Label></div>
             </div>
 
-            <ScrollArea className="flex-grow">
-              <div className="space-y-4 pr-4">
+            <ScrollArea className="flex-grow -mx-4">
+              <div className="space-y-4 px-4">
                 {fields.map((field, index) => {
-                  const selectedProduct = productMap.get(watchItems[index]?.productId);
                   return (
                     <div key={field.id} className="grid grid-cols-12 gap-x-4 items-center">
                       <div className="col-span-6">
