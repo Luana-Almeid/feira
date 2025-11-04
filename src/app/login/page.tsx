@@ -47,11 +47,11 @@ export default function LoginPage() {
       toast({
         title: 'Bem-vindo(a) de volta!',
       });
-      router.push('/dashboard/inventory'); // Redirect to a default page after login
+      router.push('/dashboard'); 
     } catch (error: any) {
       console.error('Error signing in:', error);
       let errorMessage = 'Ocorreu um erro ao fazer login.';
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         errorMessage = 'E-mail ou senha inválidos.';
       }
       toast({
