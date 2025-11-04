@@ -3,7 +3,7 @@
 
 import { useMemo, useState } from 'react';
 import { useCollection } from '@/hooks/use-collection';
-import { collection, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type Transaction, type UserProfile } from '@/lib/types';
 import { Loader2, Search, FileDown } from 'lucide-react';
@@ -59,6 +59,20 @@ export function ReportsClient() {
     setSortDescriptor(null);
   };
   
+  const formatDateForExport = (dateValue: string | Date | Timestamp | null | undefined): string => {
+    if (!dateValue) return 'N/A';
+    let date;
+    if (dateValue instanceof Timestamp) {
+      date = dateValue.toDate();
+    } else {
+      date = new Date(dateValue);
+    }
+    if (isNaN(date.getTime())) {
+        return 'Data inválida'
+    }
+    return format(date, 'dd/MM/yyyy HH:mm', { locale: ptBR });
+  }
+
   const handleExportCSV = () => {
     if (!sortedData.length) return;
 
@@ -74,14 +88,14 @@ export function ReportsClient() {
             user.cpf,
             user.role,
             user.status,
-            user.admissionDate ? format(new Date(user.admissionDate as any), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A',
-            user.dismissalDate ? format(new Date(user.dismissalDate), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'
+            formatDateForExport(user.admissionDate),
+            user.dismissalDate ? formatDateForExport(user.dismissalDate) : 'N/A'
         ]);
     } else {
         const isAdjustment = activeTab === 'adjustments';
         headers = ['Data', 'Responsável', 'Itens', ...(isAdjustment ? ['Motivo'] : []), isAdjustment ? 'Valor do Ajuste' : 'Valor Total'];
         data = (sortedData as Transaction[]).map(tx => [
-            tx.date ? format(new Date(tx.date as any), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : 'N/A',
+            formatDateForExport(tx.date),
             tx.userName,
             tx.items.map(i => `${i.quantity}x ${i.productName}`).join('; '),
             ...(isAdjustment ? [tx.reason || ''] : []),
@@ -143,7 +157,7 @@ export function ReportsClient() {
                 />
             </div>
             
-            <TabsContent value="sales" key="sales">
+            <TabsContent value="sales" key={`sales-tab`}>
                 <TransactionTable 
                     title="Histórico de Vendas" 
                     description="Todas as vendas registradas." 
@@ -152,7 +166,7 @@ export function ReportsClient() {
                     onSortChange={setSortDescriptor}
                 />
             </TabsContent>
-            <TabsContent value="purchases" key="purchases">
+            <TabsContent value="purchases" key={`purchases-tab`}>
                 <TransactionTable 
                     title="Histórico de Compras" 
                     description="Todas as compras de fornecedores." 
@@ -161,7 +175,7 @@ export function ReportsClient() {
                     onSortChange={setSortDescriptor}
                 />
             </TabsContent>
-            <TabsContent value="adjustments" key="adjustments">
+            <TabsContent value="adjustments" key={`adjustments-tab`}>
                 <TransactionTable 
                     title="Histórico de Ajustes e Descartes" 
                     description="Entradas e saídas manuais do estoque." 
@@ -170,7 +184,7 @@ export function ReportsClient() {
                     onSortChange={setSortDescriptor}
                 />
             </TabsContent>
-            <TabsContent value="employees" key="employees">
+            <TabsContent value="employees" key={`employees-tab`}>
                 <EmployeeActivityTable 
                     users={sortedData as UserProfile[]} 
                     sortDescriptor={sortDescriptor}
