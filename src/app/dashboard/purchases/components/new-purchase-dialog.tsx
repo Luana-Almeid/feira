@@ -160,13 +160,13 @@ export function NewPurchaseDialog() {
             <div className="grid grid-cols-12 gap-x-4 px-1">
               <div className="col-span-6"><Label>Produto</Label></div>
               <div className="col-span-2"><Label>Qtd.</Label></div>
-              <div className="col-span-2"><Label>Custo Unit. (R$)</Label></div>
+              <div className="col-span-3"><Label>Custo Unit. (R$)</Label></div>
             </div>
 
             <ScrollArea className="flex-grow p-1">
               <div className="space-y-4 py-2">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 gap-x-4 items-start px-1">
+                  <div key={field.id} className="grid grid-cols-12 items-start gap-x-4">
                     <div className="col-span-6">
                       <FormField
                         control={form.control}
@@ -212,7 +212,7 @@ export function NewPurchaseDialog() {
                         )}
                       />
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-3">
                       <FormField
                         control={form.control}
                         name={`items.${index}.unitPrice`}
@@ -226,8 +226,8 @@ export function NewPurchaseDialog() {
                         )}
                       />
                     </div>
-                    <div className="col-span-2 flex items-center justify-end">
-                       <div className="mt-1">
+                    <div className="col-span-1 -ml-3">
+                       <div className="mt-8">
                          <Button
                             type="button"
                             variant="destructive"
