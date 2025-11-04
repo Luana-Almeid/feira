@@ -227,7 +227,7 @@ export function NewPurchaseDialog() {
                       />
                     </div>
                     <div className="col-span-2 flex items-center justify-end">
-                       <div className="mt-8">
+                       <div className="mt-1">
                          <Button
                             type="button"
                             variant="destructive"
