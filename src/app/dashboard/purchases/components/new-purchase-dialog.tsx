@@ -147,7 +147,7 @@ export function NewPurchaseDialog() {
           Registrar Compra
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-4xl flex flex-col h-full sm:h-auto">
+      <DialogContent className="sm:max-w-4xl flex flex-col h-[90vh] sm:h-auto sm:max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Registrar Nova Compra</DialogTitle>
           <DialogDescription>
@@ -157,14 +157,14 @@ export function NewPurchaseDialog() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow min-h-0 space-y-4">
             
-            <div className="grid grid-cols-12 gap-x-4 px-4">
+            <div className="grid grid-cols-12 gap-x-4 px-1">
               <div className="col-span-6"><Label>Produto</Label></div>
               <div className="col-span-2"><Label>Qtd.</Label></div>
               <div className="col-span-2"><Label>Custo Unit. (R$)</Label></div>
             </div>
 
-            <ScrollArea className="flex-grow -mx-4">
-              <div className="space-y-4 px-4">
+            <ScrollArea className="flex-grow p-1">
+              <div className="space-y-4">
                 {fields.map((field, index) => (
                   <div key={field.id} className="grid grid-cols-12 gap-x-4 items-start">
                     <div className="col-span-6">
