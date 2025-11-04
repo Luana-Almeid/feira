@@ -15,21 +15,24 @@ function searchInItem(item: any, searchTerm: string, keys: string[]): boolean {
 
     for (const key of keys) {
         const value = get(item, key);
-        if (value !== null && value !== undefined) {
-             if (Array.isArray(value)) {
-                // If the value is an array, iterate over its items and search recursively
-                if (value.some(subItem => typeof subItem === 'object' && searchInItem(subItem, lowerCaseSearchTerm, Object.keys(subItem)))) {
-                    return true;
-                }
-            } else if (typeof value === 'object' && !(value instanceof Timestamp) && !(value instanceof Date)) {
-                // If it's a nested object, search recursively
-                if (searchInItem(value, lowerCaseSearchTerm, Object.keys(value))) {
-                    return true;
-                }
-            }
-            else if (String(value).toLowerCase().includes(lowerCaseSearchTerm)) {
+        
+        if (value === null || value === undefined) {
+            continue;
+        }
+        
+        if (Array.isArray(value)) {
+            // If the value is an array of objects (like transaction items)
+            // check if the search term is in any of the objects' values.
+            if (value.some(subItem => 
+                typeof subItem === 'object' && 
+                Object.values(subItem).some(val => 
+                    String(val).toLowerCase().includes(lowerCaseSearchTerm)
+                )
+            )) {
                 return true;
             }
+        } else if (String(value).toLowerCase().includes(lowerCaseSearchTerm)) {
+            return true;
         }
     }
     return false;
