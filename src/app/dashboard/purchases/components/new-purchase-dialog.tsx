@@ -20,7 +20,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -42,6 +41,7 @@ import { db } from '@/firebase/client';
 import { type Product } from '@/lib/types';
 import { useUser } from '@/hooks/use-user';
 import { Label } from '@/components/ui/label';
+import type React from 'react';
 
 const purchaseItemSchema = z.object({
   productId: z.string().min(1, 'Selecione um produto.'),
@@ -64,7 +64,7 @@ export function NewPurchaseDialog() {
   const form = useForm<z.infer<typeof purchaseSchema>>({
     resolver: zodResolver(purchaseSchema),
     defaultValues: {
-      items: [{ productId: '', quantity: 1, unitPrice: 0 }],
+      items: [{ productId: '', quantity: '' as any, unitPrice: '' as any }],
     },
   });
 
@@ -75,6 +75,33 @@ export function NewPurchaseDialog() {
 
   const productMap = useMemo(() => new Map(products.map((p) => [p.id, p])), [products]);
   const watchItems = form.watch('items');
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const value = e.target.value;
+    const numericValue = value.replace(/[^0-9]/g, '');
+    field.onChange(numericValue === '' ? '' : parseInt(numericValue, 10));
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>, field: any) => {
+    const value = e.target.value;
+    const rawValue = value.replace(/[^0-9]/g, '');
+    
+    if (rawValue === '') {
+      field.onChange('');
+      return;
+    }
+    
+    const numericValue = parseFloat(rawValue) / 100;
+    
+    const formattedValue = new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(numericValue);
+
+    e.target.value = formattedValue;
+    field.onChange(numericValue);
+  };
+
 
   async function onSubmit(values: z.infer<typeof purchaseSchema>) {
     setLoading(true);
@@ -116,7 +143,7 @@ export function NewPurchaseDialog() {
 
         toast({ title: "Compra registrada!", description: `Sua compra de R$ ${total.toFixed(2).replace('.', ',')} foi adicionada.`});
         setOpen(false);
-        form.reset({ items: [{ productId: '', quantity: 1, unitPrice: 0 }] });
+        form.reset({ items: [{ productId: '', quantity: '' as any, unitPrice: '' as any }] });
     } catch(error) {
         console.error(error);
         if (error instanceof Error) {
@@ -160,10 +187,10 @@ export function NewPurchaseDialog() {
             <div className="grid grid-cols-12 gap-x-4 px-1">
               <div className="col-span-6"><Label>Produto</Label></div>
               <div className="col-span-2"><Label>Qtd.</Label></div>
-              <div className="col-span-3"><Label>Custo Unit. (R$)</Label></div>
+              <div className="col-span-3"><Label>Custo (R$)</Label></div>
             </div>
 
-            <ScrollArea className="flex-grow">
+            <ScrollArea className="flex-grow -mx-1">
               <div className="space-y-4 p-1">
                 {fields.map((field, index) => (
                   <div key={field.id} className="grid grid-cols-12 items-center gap-x-4">
@@ -205,7 +232,11 @@ export function NewPurchaseDialog() {
                         render={({ field }) => (
                           <FormItem className="min-h-[72px]">
                             <FormControl>
-                              <Input type="number" {...field} placeholder="0" />
+                              <Input 
+                                placeholder="0" 
+                                {...field}
+                                onChange={(e) => handleQuantityChange(e, field)}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -219,7 +250,14 @@ export function NewPurchaseDialog() {
                         render={({ field }) => (
                           <FormItem className="min-h-[72px]">
                             <FormControl>
-                              <Input type="number" step="0.01" {...field} placeholder="R$ 0,00" />
+                              <Input 
+                                placeholder="R$ 0,00" 
+                                {...field}
+                                onChange={(e) => handlePriceChange(e, field)}
+                                value={
+                                  field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ''
+                                }
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -248,7 +286,7 @@ export function NewPurchaseDialog() {
                 <Button
                 type="button"
                 variant="outline"
-                onClick={() => append({ productId: '', quantity: 1, unitPrice: 0 })}
+                onClick={() => append({ productId: '', quantity: '' as any, unitPrice: '' as any })}
                 >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Adicionar Item
