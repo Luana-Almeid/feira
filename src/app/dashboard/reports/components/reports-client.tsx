@@ -6,12 +6,15 @@ import { useCollection } from '@/hooks/use-collection';
 import { collection, query, orderBy } from 'firebase/firestore';
 import { db } from '@/firebase/client';
 import { type Transaction, type UserProfile } from '@/lib/types';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, FileDown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TransactionTable } from './transaction-table';
 import { EmployeeActivityTable } from './employee-activity-table';
 import { Input } from '@/components/ui/input';
 import { useSortableData, type SortDescriptor } from '@/hooks/use-sortable-data';
+import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export function ReportsClient() {
   const [activeTab, setActiveTab] = useState('sales');
@@ -31,10 +34,10 @@ export function ReportsClient() {
   const adjustments = useMemo(() => transactions.filter(t => t.type === 'Descarte'), [transactions]);
   
   const searchKeysMap = {
-    sales: ['userName', 'items.productName'],
-    purchases: ['userName', 'items.productName'],
-    adjustments: ['userName', 'items.productName', 'reason'],
-    employees: ['name', 'email', 'cpf', 'role']
+    sales: ['userName', 'items.productName', 'total'],
+    purchases: ['userName', 'items.productName', 'total'],
+    adjustments: ['userName', 'items.productName', 'reason', 'total'],
+    employees: ['name', 'email', 'cpf', 'role', 'status']
   };
 
   const currentData = useMemo(() => {
@@ -56,6 +59,55 @@ export function ReportsClient() {
     setSortDescriptor(null);
   };
   
+  const handleExportCSV = () => {
+    if (!sortedData.length) return;
+
+    let headers: string[] = [];
+    let data: any[][] = [];
+    const fileName = `${activeTab}_report_${new Date().toISOString().split('T')[0]}.csv`;
+
+    if (activeTab === 'employees') {
+        headers = ['Nome', 'Email', 'CPF', 'Perfil', 'Status', 'Data de Admissão', 'Data de Demissão'];
+        data = (sortedData as UserProfile[]).map(user => [
+            user.name,
+            user.email,
+            user.cpf,
+            user.role,
+            user.status,
+            user.admissionDate ? format(new Date(user.admissionDate as any), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A',
+            user.dismissalDate ? format(new Date(user.dismissalDate), 'dd/MM/yyyy', { locale: ptBR }) : 'N/A'
+        ]);
+    } else {
+        const isAdjustment = activeTab === 'adjustments';
+        headers = ['Data', 'Responsável', 'Itens', ...(isAdjustment ? ['Motivo'] : []), isAdjustment ? 'Valor do Ajuste' : 'Valor Total'];
+        data = (sortedData as Transaction[]).map(tx => [
+            tx.date ? format(new Date(tx.date as any), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : 'N/A',
+            tx.userName,
+            tx.items.map(i => `${i.quantity}x ${i.productName}`).join('; '),
+            ...(isAdjustment ? [tx.reason || ''] : []),
+            tx.total.toFixed(2).replace('.', ',')
+        ]);
+    }
+    
+    const csvContent = [
+        headers.join(','),
+        ...data.map(row => row.map(field => `"${String(field || '').replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+  };
+
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -67,12 +119,19 @@ export function ReportsClient() {
   return (
     <div className="space-y-4">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="sales">Vendas</TabsTrigger>
-                <TabsTrigger value="purchases">Compras</TabsTrigger>
-                <TabsTrigger value="adjustments">Ajustes/Descartes</TabsTrigger>
-                <TabsTrigger value="employees">Funcionários</TabsTrigger>
-            </TabsList>
+            <div className="flex justify-between items-center mb-4">
+                <TabsList className="grid w-full grid-cols-4 sm:max-w-md">
+                    <TabsTrigger value="sales">Vendas</TabsTrigger>
+                    <TabsTrigger value="purchases">Compras</TabsTrigger>
+                    <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
+                    <TabsTrigger value="employees">Funcionários</TabsTrigger>
+                </TabsList>
+                 <Button variant="outline" onClick={handleExportCSV} disabled={sortedData.length === 0}>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Exportar
+                </Button>
+            </div>
+
 
             <div className="relative my-4">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

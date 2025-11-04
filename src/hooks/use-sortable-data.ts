@@ -10,6 +10,29 @@ export type SortDescriptor = {
   direction: 'ascending' | 'descending';
 };
 
+function searchInItem(item: any, searchTerm: string, keys: string[]): boolean {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+
+    for (const key of keys) {
+        const value = get(item, key);
+        if (value !== null && value !== undefined) {
+             if (Array.isArray(value)) {
+                if (value.some(subItem => searchInItem(subItem, lowerCaseSearchTerm, Object.keys(subItem)))) {
+                    return true;
+                }
+            } else if (typeof value === 'object' && !(value instanceof Timestamp) && !(value instanceof Date)) {
+                if (searchInItem(value, lowerCaseSearchTerm, Object.keys(value))) {
+                    return true;
+                }
+            }
+            else if (String(value).toLowerCase().includes(lowerCaseSearchTerm)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 export function useSortableData<T>(
   data: T[],
   sortDescriptor: SortDescriptor | null,
@@ -21,19 +44,7 @@ export function useSortableData<T>(
 
     // 1. Filtering
     if (searchTerm && searchKeys) {
-        sortableItems = sortableItems.filter(item => {
-            return searchKeys.some(key => {
-                const value = get(item, key);
-                if (Array.isArray(value)) {
-                    return value.some(subItem => 
-                        Object.values(subItem).some(v => 
-                            String(v).toLowerCase().includes(searchTerm.toLowerCase())
-                        )
-                    );
-                }
-                return String(value).toLowerCase().includes(searchTerm.toLowerCase());
-            });
-        });
+        sortableItems = sortableItems.filter(item => searchInItem(item, searchTerm, searchKeys));
     }
 
     // 2. Sorting
