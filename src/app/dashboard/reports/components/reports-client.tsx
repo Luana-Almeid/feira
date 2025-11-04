@@ -34,7 +34,9 @@ const TabContent = ({
   searchTerm: string, 
 }) => {
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | null>(null);
-  const { sortedData } = useSortableData(data, sortDescriptor, searchTerm, searchKeysMap[type]);
+  
+  const searchKeys = searchKeysMap[type];
+  const { sortedData } = useSortableData(data, sortDescriptor, searchTerm, searchKeys);
   
   const renderTable = () => {
     switch(type) {
@@ -165,7 +167,7 @@ export function ReportsClient() {
     <div className="space-y-4">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <div className="flex justify-between items-center mb-4">
-                <TabsList className="grid w-full grid-cols-4 sm:max-w-md">
+                <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="sales">Vendas</TabsTrigger>
                     <TabsTrigger value="purchases">Compras</TabsTrigger>
                     <TabsTrigger value="adjustments">Ajustes</TabsTrigger>
