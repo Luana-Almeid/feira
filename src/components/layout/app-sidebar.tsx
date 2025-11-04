@@ -31,11 +31,11 @@ import { useUser } from '@/hooks/use-user';
 import { Skeleton } from '../ui/skeleton';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador'] },
   { href: '/dashboard/inventory', label: 'Estoque', icon: Boxes, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/sales', label: 'Vendas', icon: ShoppingCart, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/purchases', label: 'Compras', icon: Truck, roles: ['administrador', 'funcionario'] },
   { href: '/dashboard/employees', label: 'Funcionários', icon: Users, roles: ['administrador'] },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['administrador'] },
   { href: '/dashboard/reports', label: 'Relatórios', icon: BarChart3, roles: ['administrador'] },
 ];
 
