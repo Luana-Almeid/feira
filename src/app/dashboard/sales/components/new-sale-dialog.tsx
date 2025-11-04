@@ -190,7 +190,7 @@ export function NewSaleDialog() {
           Registrar Venda
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-3xl flex flex-col h-full sm:h-auto">
+      <DialogContent className="sm:max-w-4xl flex flex-col h-full sm:h-auto">
         <DialogHeader>
           <DialogTitle>Registrar Nova Venda</DialogTitle>
           <DialogDescription>
@@ -200,80 +200,86 @@ export function NewSaleDialog() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow min-h-0 space-y-4">
             
-            <div className="grid grid-cols-12 gap-x-2 sm:gap-x-4">
+            <div className="grid grid-cols-12 gap-x-4 px-1">
               <div className="col-span-5"><Label>Produto</Label></div>
               <div className="col-span-2"><Label>Qtd.</Label></div>
               <div className="col-span-3"><Label>Preço Unit. (R$)</Label></div>
             </div>
 
             <ScrollArea className="flex-grow">
-              <div className="space-y-4 pr-4">
+              <div className="space-y-4 p-1">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="grid grid-cols-12 gap-x-2 sm:gap-x-4 items-start">
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.productId`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-5">
-                            <Select
-                              onValueChange={(value) => {
-                                field.onChange(value);
-                                handleProductChange(value, index);
-                              }}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione"} />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {products.map((product) => (
-                                  <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
-                                    {product.name} {product.stock <= 0 && '(S/ Estoque)'}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.quantity`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-2">
-                            <FormControl>
-                              <Input 
-                                placeholder="0" 
-                                {...field}
-                                onChange={(e) => handleQuantityChange(e, field)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.unitPrice`}
-                        render={({ field }) => (
-                          <FormItem className="col-span-3">
-                            <FormControl>
-                              <Input 
-                                placeholder="R$ 0,00" 
-                                {...field}
-                                onChange={(e) => handlePriceChange(e, field)}
-                                value={
-                                  field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ''
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                  <div key={field.id} className="grid grid-cols-12 gap-x-4 items-center">
+                      <div className="col-span-5">
+                        <FormField
+                            control={form.control}
+                            name={`items.${index}.productId`}
+                            render={({ field }) => (
+                            <FormItem>
+                                <Select
+                                onValueChange={(value) => {
+                                    field.onChange(value);
+                                    handleProductChange(value, index);
+                                }}
+                                value={field.value}
+                                >
+                                <FormControl>
+                                    <SelectTrigger>
+                                    <SelectValue placeholder={productsLoading ? "Carregando..." : "Selecione"} />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {products.map((product) => (
+                                    <SelectItem key={product.id} value={product.id} disabled={product.stock <= 0}>
+                                        {product.name} {product.stock <= 0 && '(S/ Estoque)'}
+                                    </SelectItem>
+                                    ))}
+                                </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <FormField
+                            control={form.control}
+                            name={`items.${index}.quantity`}
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                <Input 
+                                    placeholder="0" 
+                                    {...field}
+                                    onChange={(e) => handleQuantityChange(e, field)}
+                                />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                      </div>
+                      <div className="col-span-3">
+                        <FormField
+                            control={form.control}
+                            name={`items.${index}.unitPrice`}
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormControl>
+                                <Input 
+                                    placeholder="R$ 0,00" 
+                                    {...field}
+                                    onChange={(e) => handlePriceChange(e, field)}
+                                    value={
+                                    field.value ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(field.value) : ''
+                                    }
+                                />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                      </div>
                       <div className="col-span-2 flex items-center justify-center">
                         <Button
                           type="button"
@@ -328,5 +334,3 @@ export function NewSaleDialog() {
     </Dialog>
   );
 }
-
-    
