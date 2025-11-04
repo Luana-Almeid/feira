@@ -38,30 +38,11 @@ export function useUser() {
       const unsubProfile = onSnapshot(
         doc(db, 'users', user.uid),
         (docSnap) => {
-          let userProfile: UserProfile | null = null;
           if (docSnap.exists()) {
-            userProfile = docSnap.data() as UserProfile;
+            setProfile(docSnap.data() as UserProfile);
+          } else {
+            setProfile(null);
           }
-
-          // Force admin role for specific user
-          if (user.email === 'luanasoaressw@gmail.com') {
-             if (userProfile) {
-                userProfile.role = 'administrador';
-            } else {
-                // If profile doesn't exist for the owner, create a temporary one.
-                userProfile = {
-                    uid: user.uid,
-                    name: user.displayName || 'Admin',
-                    email: user.email,
-                    cpf: '000.000.000-00',
-                    role: 'administrador',
-                    status: 'ativo',
-                    admissionDate: new Date(),
-                };
-            }
-          }
-
-          setProfile(userProfile);
           // Now that we have the profile (or know it doesn't exist), we can stop loading.
           setLoading(false);
         },
