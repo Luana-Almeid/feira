@@ -42,6 +42,7 @@ import { db } from '@/firebase/client';
 import { type Product } from '@/lib/types';
 import type React from 'react';
 import { useUser } from '@/hooks/use-user';
+import { cn } from '@/lib/utils';
 
 const saleItemSchema = z.object({
   productId: z.string().min(1, "Selecione um produto."),
@@ -189,7 +190,7 @@ export function NewSaleDialog() {
           Registrar Venda
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-3xl">
+      <DialogContent className="sm:max-w-3xl flex flex-col h-full sm:h-auto">
         <DialogHeader>
           <DialogTitle>Registrar Nova Venda</DialogTitle>
           <DialogDescription>
@@ -197,13 +198,15 @@ export function NewSaleDialog() {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-12 gap-x-2 sm:gap-x-4 mb-2">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow min-h-0 space-y-4">
+            
+            <div className="grid grid-cols-12 gap-x-2 sm:gap-x-4">
               <div className="col-span-5"><Label>Produto</Label></div>
               <div className="col-span-2"><Label>Qtd.</Label></div>
-              <div className="col-span-4 sm:col-span-3"><Label>Preço Unit. (R$)</Label></div>
+              <div className="col-span-3"><Label>Preço Unit. (R$)</Label></div>
             </div>
-            <ScrollArea className="h-72 w-full">
+
+            <ScrollArea className="flex-grow">
               <div className="space-y-4 pr-4">
                 {fields.map((field, index) => (
                   <div key={field.id} className="grid grid-cols-12 gap-x-2 sm:gap-x-4 items-start">
@@ -256,7 +259,7 @@ export function NewSaleDialog() {
                         control={form.control}
                         name={`items.${index}.unitPrice`}
                         render={({ field }) => (
-                          <FormItem className="col-span-4 sm:col-span-3">
+                          <FormItem className="col-span-3">
                             <FormControl>
                               <Input 
                                 placeholder="R$ 0,00" 
@@ -271,13 +274,14 @@ export function NewSaleDialog() {
                           </FormItem>
                         )}
                       />
-                      <div className="col-span-1">
+                      <div className="col-span-2 flex items-center justify-center">
                         <Button
                           type="button"
                           variant="destructive"
                           size="icon"
                           onClick={() => remove(index)}
                           disabled={fields.length <= 1}
+                          className="h-10 w-10"
                         >
                           <Trash2 className="h-4 w-4" />
                           <span className="sr-only">Remover item</span>
@@ -312,7 +316,7 @@ export function NewSaleDialog() {
                 </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="!mt-auto pt-4">
               <Button type="submit" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Finalizar Venda
@@ -324,3 +328,5 @@ export function NewSaleDialog() {
     </Dialog>
   );
 }
+
+    
